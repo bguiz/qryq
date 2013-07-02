@@ -13,3 +13,28 @@
 Code that manages, using promises, a series of API queries, which may be executed in parallel, in sequence, or in an order required by specified dependency of one API query upon the results of zero or more other API queries in the same series where these dependencies form a directed acyclic graph
 
 ----
+
+## Implementation
+
+Frameworks
+- [node.js](http://nodejs.org)
+- [express.js](expressjs.com)
+
+Dependencies
+- [Q](https://github.com/kriskowal/q)
+- [underscore.js](http://underscorejs.org)
+
+----
+
+## Inspiration
+
+- Neil Jenkin's talk Tips, Tricks and Hacks in the Pursuit of Speed
+  - [REST is slow](http://nmjenkins.com/presentations/network-speed.html#/14)
+  - [Concatenate requests](http://nmjenkins.com/presentations/network-speed.html#/15)
+  - [Concatenate responses](http://nmjenkins.com/presentations/network-speed.html#/16)
+
+- [Play framework](http://playframework.com)'s
+  - [Linkedin talk by Yevgeniy Brikman](http://www.slideshare.net/brikis98/the-play-framework-at-linkedin)
+  - See slides 85 through 88
+
+----
