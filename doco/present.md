@@ -190,3 +190,35 @@ Dependencies
       });
 
 ----
+
+## Light bulb
+
+- [Q - executing a series of promises and defining dependencies between them in a DAG](http://stackoverflow.com/questions/17342401/q-executing-a-series-of-promises-and-defining-dependencies-between-them-in-a-d)
+  - Queries plus their results are the nodes
+  - Deferred promises are the edges
+  - Form a directed acyclic graph
+- Yay for [graph theory](en.wikipedia.org/wiki/Graph_theory)
+
+----
+
+## Alpha
+
+- Currently implemented in [walkre](https://github.com/bguiz/walkre)
+  - Not suitable for any real use yet, watch this space
+
+----
+
+## Horizon
+
+- Load testing/ stress testing
+  - Start including high latency ops, e.g. disk I/O
+  - Put Neil Jenkin's hypothesis to the test
+- Create a front end for this server
+  - Full stack end to end load testing/ stress testing
+- Separate `qryq` into its own library
+  - Presently exists within `walkre`
+- Feature to reference results of dependent queries inline in query data
+
+----
+
+## Fin
