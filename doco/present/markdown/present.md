@@ -1,8 +1,14 @@
 # qryq
 
+<sup>
+	/ˈkwərik/
+</sup>
+
 ### Brendan Graetz
 
-![Brendan Graetz](https://si0.twimg.com/profile_images/2697395233/8dec79da8f5963a4cad4da0ebd6a532d.png "Brendan Graetz on Twitter") [@bguiz](http://bguiz.com "Brendan Graetz on Twitter")
+![Brendan Graetz](https://si0.twimg.com/profile_images/2697395233/8dec79da8f5963a4cad4da0ebd6a532d.png "Brendan Graetz on Twitter")
+
+[@bguiz](http://bguiz.com "Brendan Graetz on Twitter")
 
 [bguiz.com](http://bguiz.com "Brendan Graetz")
 
@@ -10,7 +16,25 @@
 
 ## In one sentence
 
-Code that manages, using promises, a series of API queries, which may be executed in parallel, in sequence, or in an order required by specified dependency of one API query upon the results of zero or more other API queries in the same series where these dependencies form a directed acyclic graph
+Manages, using promises, a list of API queries, which may be executed in parallel, in sequence, or in an order required by specified dependency of one API query upon the results of zero or more other API queries in the same list where these dependencies form a directed acyclic graph.
+
+(a long sentence)
+
+---
+
+### The Query Queue
+
+<pre>
+	<code>
+[
+	{"id":"a1","depends":[],"data":{"some":"data a1"}},
+	{"id":"b1","depends":["a1"],"data":{"some":"data b1"}},
+	{"id":"b2","depends":["a1"],"data":{"some":"data b2"}},
+	{"id":"c1","depends":["b1","b2"],"data":{"some":"data c1"}},
+	{"id":"x1","depends":[],"data":{"some":"data x1"}},
+]
+	</code>
+</pre>
 
 ----
 
