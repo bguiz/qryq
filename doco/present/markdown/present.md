@@ -57,6 +57,30 @@ Dependencies
   - [Concatenate requests](http://nmjenkins.com/presentations/network-speed.html#/15)
   - [Concatenate responses](http://nmjenkins.com/presentations/network-speed.html#/16)
 
+---
+
+<pre>
+	<code class="js">
+POST /api/
+
+[
+    [ 'deleteMessages', {
+        idList: [ 'msg1' ]
+    }],
+    [ 'getMailboxMessageList', {
+        mailboxName: 'Inbox',
+        position: 0,
+        limit: 30,
+        sort: 'date descending'
+    }]
+]
+	</code>
+</pre>
+
+---
+
+## Inspiration
+
 - [Play framework](http://playframework.com)'s
   - [Linkedin talk by Yevgeniy Brikman](http://www.slideshare.net/brikis98/the-play-framework-at-linkedin)
   - See slides 85 through 88
@@ -67,11 +91,13 @@ Dependencies
 
 - NodeJs callback spaghetti
 - Fix this using promises
-- While better, if the code is sufficiently complex, you can still end up with promise spaghetti
+- While better, if the code is sufficiently complex, you can still end up with:
+- Promise spaghetti
 
 ---
 
 - `Q` spaghetti
+- Sample code of how *not* to use promises
 
 				qry.journeyPlanner = qry.journeyPlanner || 'gmaps';
 				var needGeo =
@@ -215,9 +241,11 @@ Dependencies
 
 ----
 
-## Light bulb
+## Light Bulb
 
-- [Q - executing a series of promises and defining dependencies between them in a DAG](http://stackoverflow.com/questions/17342401/q-executing-a-series-of-promises-and-defining-dependencies-between-them-in-a-d)
+- Asked a question on S/O
+	- [Q - executing a series of promises and defining dependencies between them in a DAG](http://stackoverflow.com/questions/17342401/q-executing-a-series-of-promises-and-defining-dependencies-between-them-in-a-d)
+- In summary
   - Queries plus their results are the nodes
   - Deferred promises are the edges
   - Form a directed acyclic graph
@@ -225,7 +253,7 @@ Dependencies
 
 ----
 
-## Alpha
+## Alpha Quality
 
 - Currently implemented in [walkre](https://github.com/bguiz/walkre)
   - Not suitable for any real use yet, watch this space
@@ -234,14 +262,50 @@ Dependencies
 
 ## Horizon
 
+- Rewrite the `Q` spaghetti in [walkre](https://github.com/bguiz/walkre)
+	- Demonstrate how declaratively defining dependent queries can make code more comprehensible
+- Cyclic graph detection in dependent query queue validation
+- Feature to reference results of dependent queries *inline* in query data
+	- Kinda [like this](http://nmjenkins.com/presentations/network-speed.html#/17)
+
+---
+
+<pre>
+	<code class="js">
+[
+    [ 'setMailboxes', {
+        create: {
+            '123': {
+                name: 'Important'
+            }
+        }
+    }],
+    [ 'setPopLinks', {
+        create: {
+            '124': {
+                server: 'pop.live.com',
+                port: 110,
+                username: 'testuser@live.com'
+                password: 'letmein'
+                folder: '#123'
+            }
+        }
+    }]
+]
+	</code>
+</pre>
+
+---
+
+### Farther Horizon
+
 - Load testing/ stress testing
   - Start including high latency ops, e.g. disk I/O
   - Put Neil Jenkin's hypothesis to the test
 - Create a front end for this server
   - Full stack end to end load testing/ stress testing
-- Separate `qryq` into its own library
-  - Presently exists within `walkre`
-- Feature to reference results of dependent queries inline in query data
+- Separate [qryq](https://github.com/bguiz/qryq) into its own library
+  - Presently exists only within [walkre](https://github.com/bguiz/walkre)
 
 ----
 
