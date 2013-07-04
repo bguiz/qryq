@@ -48,6 +48,37 @@ Dependencies
 - [Q](https://github.com/kriskowal/q)
 - [underscore.js](http://underscorejs.org)
 
+---
+
+- First time writing a nodejs application
+- First time using express
+- First time using promises
+- Made quite a few n00b mistakes along the way
+
+---
+
+- Trying to force express to parse all calls as JSON, no matter what
+
+				server.post('/api/v1', [middleware.readRequestDataAsString, middleware.acceptOnlyJson], function(req, resp) {
+					/* ... */
+				});
+
+
+				exports.readRequestDataAsString = function(req, resp, next) {
+					req.content = '';
+					var contentLength = 0;
+					req.on('data', function(data) {
+						req.content += data;
+						contentLength += data.length;
+						if (contentLength > maxContentLength) {
+							/* ... */
+
+
+				exports.acceptOnlyJson = function(req, resp, next) {
+					try {
+						req.json = JSON.parse(req.content);
+						/* ... */
+
 ----
 
 ## Inspiration
@@ -84,6 +115,16 @@ POST /api/
 - [Play framework](http://playframework.com)'s
   - [Linkedin talk by Yevgeniy Brikman](http://www.slideshare.net/brikis98/the-play-framework-at-linkedin)
   - See slides 85 through 88
+
+---
+
+<div>
+	<iframe src="http://www.slideshare.net/slideshow/embed_code/22423382?rel=0&startSlide=85" width="512" height="421" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen webkitallowfullscreen mozallowfullscreen>
+	</iframe>
+	<div style="margin-bottom:5px">
+		<strong> <a href="http://www.slideshare.net/brikis98/the-play-framework-at-linkedin" title="The Play Framework at LinkedIn" target="_blank">The Play Framework at LinkedIn</a></strong> from <strong><a href="http://www.slideshare.net/brikis98" target="_blank">Yevgeniy Brikman</a></strong>
+	</div>
+</div>
 
 ----
 
@@ -250,6 +291,46 @@ POST /api/
   - Deferred promises are the edges
   - Form a directed acyclic graph
 - Yay for [graph theory](en.wikipedia.org/wiki/Graph_theory)
+  - `Q` allows me to use the data structure without having to write the algorithm
+
+---
+
+### Light Bulb
+
+I would like to process a series of data, where the output of each may be used as inputs into the others.
+
+For example:
+
+<pre>
+	<code class="js">
+var batch = [
+	{"id":"a1","depends":[],"data":{"some":"data a1"}},
+	{"id":"b1","depends":["a1"],"data":{"some":"data b1"}},
+	{"id":"b2","depends":["a1"],"data":{"some":"data b2"}},
+	{"id":"c1","depends":["b1","b2"],"data":{"some":"data c1"}},
+	{"id":"x1","depends":[],"data":{"some":"data x1"}},
+];
+	</code>
+</pre>
+
+This means that once `a1` is complete, its output will be sent to both `b1` and `b2`;
+and when these complete, both of their output will be sent to `c1` (only upon both of their completion.
+`x1` may execute in parallel with all of `a1`, `b1`, `b2`, and `c1`;
+and `b1` may execute in parallel with `b2`, as no `depends` between them are defined.
+
+---
+
+### Light Bulb
+
+Upon completion of `c1` and `x1`, and therefore the completion of all 5 of them, the output of all five should be returned.
+
+We will assume that no circular dependencies are defined, and thus is a directed acyclic graph (DAG)
+
+I would like to know how to implement this using [Q](https://github.com/kriskowal/q/wiki/API-Reference), because:
+
+- All the processing of the data will be asynchronous, and thus I will need to use either callbacks, or deferreds and promises;
+and I prefer the latter
+- Promises can double up as a convenient way to define the edges in the graph
 
 ----
 
@@ -310,3 +391,21 @@ POST /api/
 ----
 
 ## Fin
+
+- Recommendation for load testing a nodejs server?
+- What other libraries are there out that that perform this function? In other languages?
+- Submit some patches!
+
+----
+
+## Thank you
+
+[bguiz.com](http://bguiz.com)
+
+[@bguiz](http://twitter.com/bguiz)
+
+[qryq](https://github.com/bguiz/qryq)
+
+[walkre](https://github.com/bguiz/walkre)
+
+[this preso](https://github.com/bguiz/qryq/blob/present/doco/present.md)
