@@ -342,6 +342,210 @@ and I prefer the latter
 
 - Currently implemented in [walkre](https://github.com/bguiz/walkre)
   - Not suitable for any real use yet, watch this space
+  - Complete rewrite of the `qryq` between the hours of 22:45 and 00:50, including writing this preso
+
+---
+
+### Alpha Quality
+
+- Support for parallel execution comes out of the box
+	- No issues here
+- Implementation of sequential execution uses recursion
+	- Tail order optimisation???
+	- Should rewrite to be iterative in order to be less expensive
+- Implementation of dependent (DAG execution)
+	- Cleaned it up significantly since
+
+----
+
+## The Code
+
+----
+
+## Parallel
+
+<pre>
+	<code class="js">
+var numApiCalls = qry.length;
+var apiPromises = [];
+_.each(qry, function(line) {
+var apiQry = line.qry;
+var apiName = line.api;
+var apiFunc = api[apiName];
+if (!apiFunc) {
+  apiFunc = api.noSuchApi;
+  apiQry = apiName;
+}
+apiPromises.push(async(apiFunc, apiQry));
+});
+	</code>
+</pre>
+
+---
+
+### Parallel
+
+<pre>
+	<code class="js">
+Q.allSettled(apiPromises).then(function(apiResults) {
+var out = [];
+_.each(apiResults, function(apiResult, idx) {
+  var result = _.extend({
+    id: qry[idx].id,
+    api: qry[idx].api},
+    apiResult);
+  out.push(result);
+});
+deferred.resolve(out);
+});
+	</code>
+</pre>
+
+----
+
+## Sequential
+
+<pre>
+	<code class="js">
+var numApiCalls = qry.length;
+var out = [];
+function sequentialLine(idx) {
+var line = qry[idx];
+var apiQry = line.qry;
+var apiName = line.api;
+var apiFunc = api[apiName];
+if (!apiFunc) {
+  apiFunc = api.noSuchApi;
+  apiQry = apiName;
+}
+var promise = async(apiFunc, apiQry);
+promise.then(
+  /* ... */
+);
+}
+sequentialLine(0);
+	</code>
+</pre>
+
+---
+
+### Sequential
+
+<pre>
+	<code class="js">
+promise.then(
+  function(result) {
+    out.push(result);
+    if (idx < numApiCalls - 1) {
+      sequentialLine(idx + 1);
+    }
+    else {
+      deferred.resolve(out);
+    }
+  },
+  function(err) {
+    deferred.reject({
+      error: 'Cannot process query '+apiQry.id,
+      detail: err,
+      incompleteResults: out
+    });
+  }
+);
+	</code>
+</pre>
+
+----
+
+## Dependent
+
+<pre>
+	<code class="js">
+var linePromisesHash = {};
+var linePromises = [];
+_.each(qry, function(line) {
+var apiQry = line.qry;
+var apiName = line.api;
+var apiFunc = api[apiName];
+if (!apiFunc) {
+  apiFunc = api.noSuchApi;
+  apiQry = apiName;
+}
+var linePromise = dependentLine(line, apiFunc, linePromisesHash);
+linePromises.push(linePromise);
+linePromisesHash[line.id] = linePromise;
+});
+	</code>
+</pre>
+
+---
+
+### Dependent
+
+<pre>
+	<code class="js">
+var dependentLine = function(line, apiFunc, linePromisesHash) {
+  var lineDeferred = Q.defer();
+  var dependsPromises = [];
+  var depIds = line.depends;
+  _.each(depIds, function(depId) {
+    var dependPromise = linePromisesHash[depId];
+    dependsPromises.push(dependPromise);
+  });
+  Q.allSettled(dependsPromises).then(function(dependsResults) {
+    /* ... */
+  });
+  return lineDeferred.promise;
+};
+	</code>
+</pre>
+
+---
+
+### Dependent
+
+<pre>
+	<code class="js">
+Q.allSettled(dependsPromises).then(function(dependsResults) {
+var dependsResultsHash = {};
+_.each(dependsResults, function(depResult, idx) {
+  var depId = depIds[idx];
+  if (depResult.state === 'fulfilled') {
+    dependsResultsHash[depId] = depResult;
+  }
+  else {
+    dependsResultsHash[depId] = null;
+  }
+});
+var lineQryWithDepends = {};
+_.extend(
+  lineQryWithDepends,
+  line.qry,
+  {dependsResults: dependsResultsHash}
+);
+apiFunc(lineDeferred, lineQryWithDepends);
+});
+	</code>
+</pre>
+
+---
+
+### Dependent
+
+<pre>
+	<code class="js">
+Q.allSettled(linePromises).then(function(lineResults) {
+var out = [];
+_.each(lineResults, function(lineResult, idx) {
+  var lineId = qry[idx].id;
+  out.push({
+    id: lineId,
+    response: lineResult
+  });
+});
+deferred.resolve(out);
+});
+	</code>
+</pre>
 
 ----
 
