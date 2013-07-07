@@ -1,0 +1,34 @@
+{
+  "name": "qryq",
+  "description": "Manages, using promises, a list of API queries, which may be executed in parallel, in sequence, or in an order required by specified dependency of one API query upon the results of zero or more other API queries in the same list where these dependencies form a directed acyclic graph.",
+  "author": "Brendan Graetz <redacted@my.email> (http://bguiz.com)",
+  "config": {
+    "defaults": {
+      }
+    },
+    "limits": {
+    }
+  },
+  "homepage": "https://github.com/bguiz/qryq",
+  "private": true,
+  "version": "0.0.1",
+  "engines": {
+    "node": ">= 0.8.10"  
+  },
+  "dependencies": {
+    "express": "~3.2.6",
+    "q": "~0.9.6",
+    "underscore":"~1.4.4"
+  },
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bguiz/qryq.git"
+  },
+  "keywords": [],
+  "license": {
+    "type": "undecided",
+    "url": "https://github.com/bguiz/qryq"
+  }
+}
