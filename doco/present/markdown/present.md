@@ -553,9 +553,12 @@ deferred.resolve(out);
 
 - Rewrite the `Q` spaghetti in [walkre](https://github.com/bguiz/walkre)
 	- Demonstrate how declaratively defining dependent queries can make code more comprehensible
-- Cyclic graph detection in dependent query queue validation
 - Feature to reference results of dependent queries *inline* in query data
 	- Kinda [like this](http://nmjenkins.com/presentations/network-speed.html#/17)
+- Separate [qryq](https://github.com/bguiz/qryq) into its own library
+  - Presently exists only within [walkre](https://github.com/bguiz/walkre)
+- Write unit tests
+- Pick a licence for this library
 
 ---
 
@@ -588,13 +591,13 @@ deferred.resolve(out);
 
 ### Farther Horizon
 
+- Cyclic graph detection in dependent query queue validation
 - Load testing/ stress testing
   - Start including high latency ops, e.g. disk I/O
   - Put Neil Jenkin's hypothesis to the test
 - Create a front end for this server
   - Full stack end to end load testing/ stress testing
-- Separate [qryq](https://github.com/bguiz/qryq) into its own library
-  - Presently exists only within [walkre](https://github.com/bguiz/walkre)
+- Create a NodeJs/ ExpressJs server wrapper for `qryq`
 
 ----
 
