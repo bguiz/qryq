@@ -12,3 +12,8 @@ logs
 results
 
 npm-debug.log
+
+# individual excludes, to avoid accidental commits
+/static/favicon.ico
+/node_modules
+/doco/private
