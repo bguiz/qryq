@@ -16,11 +16,35 @@
 
 ## In one sentence
 
-Manages, using promises, a list of API queries, which may be executed in parallel, in sequence, or in an order required by specified dependency of one API query upon the results of zero or more other API queries in the same list where these dependencies form a directed acyclic graph.
+`qry` is a NodeJs library that allows one to express a series of API queries and define the dependencies between them. These queries may be executed in parallel, in sequence, or in a directed acyclic graph.
 
-(a long sentence)
+----
 
----
+## Benefits
+
+- non-RESTful
+- readable && composable
+  - declarative query from client
+  - rather than imperative impl. on server
+  - avoids callback spaghetti || promise spaghetti
+
+----
+
+## Benefits
+
+- concatenation
+  - reduction in bandwidth && latency
+  - [protocol overhead](http://sd.wareonearth.com/~phil/net/overhead/)
+
+----
+
+## Benefits
+
+- less duplication of biz logic required (client/server)
+- groups several queries together as an atomic unit
+  - [asynchronous UIs](http://blog.alexmaccaw.com/asynchronous-ui)
+
+----
 
 ### The Query Queue
 
@@ -615,8 +639,10 @@ deferred.resolve(out);
 
 [@bguiz](http://twitter.com/bguiz)
 
-[qryq](https://github.com/bguiz/qryq)
+[http://bit.ly/qryq](http://bguiz.com/post/54620002947/qryq "qryq intro")
 
-[walkre](https://github.com/bguiz/walkre)
+[github.com/bguiz/qryq](https://github.com/bguiz/qryq "qryq source")
 
-[this preso](https://github.com/bguiz/qryq/blob/present/doco/present.md)
+[/doco/present/markdown/present.md](https://github.com/bguiz/qryq/blob/master/doco/present/markdown/present.md "this presentation")
+
+[github.com/bguiz/walkre](https://github.com/bguiz/walkre "walkre source")
