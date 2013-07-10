@@ -16,25 +16,90 @@
 
 ## In one sentence
 
-Manages, using promises, a list of API queries, which may be executed in parallel, in sequence, or in an order required by specified dependency of one API query upon the results of zero or more other API queries in the same list where these dependencies form a directed acyclic graph.
+`qry` is a NodeJs library that allows one to express a series of API queries and define the dependencies between them. These queries may be executed in parallel, in sequence, or in a directed acyclic graph.
 
-(a long sentence)
+----
 
----
+## Benefits
 
-### The Query Queue
+- non-RESTful
+- readable && composable
+  - declarative query from client
+  - rather than imperative impl. on server
+  - avoids callback spaghetti || promise spaghetti
+
+----
+
+## Benefits
+
+- concatenation
+  - reduction in bandwidth && latency
+  - [protocol overhead](http://sd.wareonearth.com/~phil/net/overhead/)
+
+----
+
+## Benefits
+
+- less duplication of biz logic required (client/server)
+- groups several queries together as an atomic unit
+  - [asynchronous UIs](http://blog.alexmaccaw.com/asynchronous-ui)
+
+----
+
+## The Query Queue
 
 <pre>
 	<code>
 [
-	{"id":"a1","depends":[],"data":{"some":"data a1"}},
-	{"id":"b1","depends":["a1"],"data":{"some":"data b1"}},
-	{"id":"b2","depends":["a1"],"data":{"some":"data b2"}},
-	{"id":"c1","depends":["b1","b2"],"data":{"some":"data c1"}},
-	{"id":"x1","depends":[],"data":{"some":"data x1"}},
+  {"id":"q1","depends":[],"api":"add","qry":{"a":1,"b":9}},
+  {"id":"q2","depends":[],"api":"add","qry":{"a":99,"b":1}},
+  {"id":"q3","depends":["q2","q1"],"api":"multiply","qry":{"a":"#{q1}","b":"#{q2}"}},
+  {"id":"q4","depends":["q3"],"api":"multiply","qry":{"a":"#{q3}","b":5}}
 ]
 	</code>
 </pre>
+
+---
+
+Can you guess what the result for `q4` is?
+
+---
+
+    `q2`                          --> add(99, 1)          --> 100
+    `q1`                          --> add(1, 9)           --> 10
+    `q3` --> multiply(`q1`, `q2`) --> multiply(10, 100)   --> 1000
+    `q4` --> multiply(`q3`, 5)    --> multiply(1000, 5)   --> 5000
+
+Note that `q1` and `q2` may execute in any order, `q3` may only execute when both of them finish, and `q4` executes last.
+
+This is all taken care of by qryq, so long as you define the `depends` for each line appropriately
+
+----
+
+## Real World Query Queue
+
+<pre>
+  <code>
+[
+  {"id":"qGeocodeOrigin","depends":[],"api":"gmapsGeoLookup","qry":{"address":"36 Meadow Wood Walk, Narre Warren VIC 3805"}},
+  {"id":"qGeocodeDestination","depends":[],"api":"gmapsGeoLookup","qry":{"address":"19 Bourke Street, Melbourne, VIC 3000"}},
+  {"id":"qScore","depends":["qGeocodeOrigin","qGeocodeDestination"],"api":"score","qry":{
+      "origin":{"address":"36 Meadow Wood Walk, Narre Warren VIC 3805","lat":"#{qGeocodeOrigin}.lat","lon":"#{qGeocodeOrigin}.lon"},
+      "journeyPlanner":"melbtrans",
+      "destinations":[
+        {
+          "fixed":true,"class":"work","weight":0.8,
+          "location":{"address":"19 Bourke Street, Melbourne, VIC 3000","lat":"#{qGeocodeDestination}.lat","lon":"#{qGeocodeDestination}.lon"},
+          "modes":[{"form":"transit","max":{"time":2400}}]
+        }
+      ]
+    }
+  }
+]
+  </code>
+</pre>
+
+From [`walkre`](https://github.com/bguiz/walkre "walkre")
 
 ----
 
@@ -47,39 +112,6 @@ Frameworks
 Dependencies
 - [Q](https://github.com/kriskowal/q)
 - [underscore.js](http://underscorejs.org)
-
----
-
-- First time writing a nodejs application
-- First time using express
-- First time using promises
-- Made quite a few n00b mistakes along the way
-
----
-
-- Trying to force express to parse all calls as JSON, no matter what
-
-				server.post('/api/v1', [middleware.readRequestDataAsString, middleware.acceptOnlyJson], function(req, resp) {
-					/* ... */
-				});
-
-
-				exports.readRequestDataAsString = function(req, resp, next) {
-					req.content = '';
-					var contentLength = 0;
-					req.on('data', function(data) {
-						req.content += data;
-						contentLength += data.length;
-						if (contentLength > maxContentLength) {
-							/* ... */
-
-
-				exports.acceptOnlyJson = function(req, resp, next) {
-					try {
-						req.json = JSON.parse(req.content);
-						/* ... */
-
-----
 
 ## Inspiration
 
@@ -136,6 +168,45 @@ POST /api/
 - Promise spaghetti
 
 ---
+
+### Light Bulb
+
+I would like to process a series of data, where the output of each may be used as inputs into the others.
+
+For example:
+
+<pre>
+  <code class="js">
+var batch = [
+  {"id":"a1","depends":[],"data":{"some":"data a1"}},
+  {"id":"b1","depends":["a1"],"data":{"some":"data b1"}},
+  {"id":"b2","depends":["a1"],"data":{"some":"data b2"}},
+  {"id":"c1","depends":["b1","b2"],"data":{"some":"data c1"}},
+  {"id":"x1","depends":[],"data":{"some":"data x1"}},
+];
+  </code>
+</pre>
+
+This means that once `a1` is complete, its output will be sent to both `b1` and `b2`;
+and when these complete, both of their output will be sent to `c1` (only upon both of their completion.
+`x1` may execute in parallel with all of `a1`, `b1`, `b2`, and `c1`;
+and `b1` may execute in parallel with `b2`, as no `depends` between them are defined.
+
+---
+
+### Light Bulb
+
+Upon completion of `c1` and `x1`, and therefore the completion of all 5 of them, the output of all five should be returned.
+
+We will assume that no circular dependencies are defined, and thus is a directed acyclic graph (DAG)
+
+I would like to know how to implement this using [Q](https://github.com/kriskowal/q/wiki/API-Reference), because:
+
+- All the processing of the data will be asynchronous, and thus I will need to use either callbacks, or deferreds and promises;
+and I prefer the latter
+- Promises can double up as a convenient way to define the edges in the graph
+
+----
 
 - `Q` spaghetti
 - Sample code of how *not* to use promises
@@ -284,77 +355,309 @@ Q.allSettled([originPromisesDeferred.promise, destinationsPromisesDeferred.promi
 	</code>
 </pre>
 
-----
+---
 
-## Light Bulb
+- Using qryq, the request made by the client is bigger
 
-- Asked a question on S/O
-	- [Q - executing a series of promises and defining dependencies between them in a DAG](http://stackoverflow.com/questions/17342401/q-executing-a-series-of-promises-and-defining-dependencies-between-them-in-a-d)
-- In summary
-  - Queries plus their results are the nodes
-  - Deferred promises are the edges
-  - Form a directed acyclic graph
-- Yay for [graph theory](en.wikipedia.org/wiki/Graph_theory)
-  - `Q` allows me to use the data structure without having to write the algorithm
+Before:
+
+{
+  "origin":{"address":"36 Meadow Wood Walk, Narre Warren VIC 3805"},
+  "journeyPlanner":"melbtrans",
+  "destinations":[
+    {
+      "fixed":true,"class":"work","weight":0.8,"location":{"address":"19 Bourke Street, Melbourne, VIC 3000"},
+      "modes":[{"form":"transit","max":{"time":2400}}]
+    }
+  ]
+}
 
 ---
 
-### Light Bulb
+- Using qryq, the request made by the client is bigger
 
-I would like to process a series of data, where the output of each may be used as inputs into the others.
+After:
 
-For example:
-
-<pre>
-	<code class="js">
-var batch = [
-	{"id":"a1","depends":[],"data":{"some":"data a1"}},
-	{"id":"b1","depends":["a1"],"data":{"some":"data b1"}},
-	{"id":"b2","depends":["a1"],"data":{"some":"data b2"}},
-	{"id":"c1","depends":["b1","b2"],"data":{"some":"data c1"}},
-	{"id":"x1","depends":[],"data":{"some":"data x1"}},
-];
-	</code>
-</pre>
-
-This means that once `a1` is complete, its output will be sent to both `b1` and `b2`;
-and when these complete, both of their output will be sent to `c1` (only upon both of their completion.
-`x1` may execute in parallel with all of `a1`, `b1`, `b2`, and `c1`;
-and `b1` may execute in parallel with `b2`, as no `depends` between them are defined.
+[
+  {"id":"qGeocodeOrigin","depends":[],"api":"gmapsGeoLookup","qry":{"address":"36 Meadow Wood Walk, Narre Warren VIC 3805"}},
+  {"id":"qGeocodeDestination","depends":[],"api":"gmapsGeoLookup","qry":{"address":"19 Bourke Street, Melbourne, VIC 3000"}},
+  {"id":"qScore","depends":["qGeocodeOrigin","qGeocodeDestination"],"api":"score","qry":{
+      "origin":{"address":"36 Meadow Wood Walk, Narre Warren VIC 3805","lat":"#{qGeocodeOrigin}.lat","lon":"#{qGeocodeOrigin}.lon"},
+      "journeyPlanner":"melbtrans",
+      "destinations":[
+        {
+          "fixed":true,"class":"work","weight":0.8,
+          "location":{"address":"19 Bourke Street, Melbourne, VIC 3000","lat":"#{qGeocodeDestination}.lat","lon":"#{qGeocodeDestination}.lon"},
+          "modes":[{"form":"transit","max":{"time":2400}}]
+        }
+      ]
+    }
+  }
+]
 
 ---
 
-### Light Bulb
-
-Upon completion of `c1` and `x1`, and therefore the completion of all 5 of them, the output of all five should be returned.
-
-We will assume that no circular dependencies are defined, and thus is a directed acyclic graph (DAG)
-
-I would like to know how to implement this using [Q](https://github.com/kriskowal/q/wiki/API-Reference), because:
-
-- All the processing of the data will be asynchronous, and thus I will need to use either callbacks, or deferreds and promises;
-and I prefer the latter
-- Promises can double up as a convenient way to define the edges in the graph
-
-----
-
-## Alpha Quality
-
-- Currently implemented in [walkre](https://github.com/bguiz/walkre)
-  - Not suitable for any real use yet, watch this space
-  - Complete rewrite of the `qryq` between the hours of 22:45 and 00:50, including writing this preso
+- ... however, this means that the code on the server can focus on just one thing
+- similar in concept to the UNIX command line philosophy
+  - make sure you do just one thing well, and
+  - chain well with others
 
 ---
 
-### Alpha Quality
+- Server `score` API before:
 
-- Support for parallel execution comes out of the box
-	- No issues here
-- Implementation of sequential execution uses recursion
-	- Tail order optimisation???
-	- Should rewrite to be iterative in order to be less expensive
-- Implementation of dependent (DAG execution)
-	- Cleaned it up significantly since
+    exports.score = function(deferred, qry) {
+      var validateErrs = validateScore(qry);
+      if (validateErrs.length > 0) {
+        deferred.reject({
+          msg: 'Score could not be computed',
+          errors: validateErrs
+        });
+        return;
+      }
+      qry.journeyPlanner = qry.journeyPlanner || 'gmaps';
+      var needGeo =
+        (qry.journeyPlanner === 'melbtrans')
+        || _.some(qry.destinations, function(destination) {
+          destination.hasOwnProperty('fixed') && (destination.fixed === true);
+        });
+      var originPromises = [];
+      var destinationPromises = [];
+      if (needGeo) {
+        //get geolocations for all locations present
+        if (!qry.origin.lat || !qry.origin.lon) {
+          var originGeoDeferred = Q.defer();
+          exports.gmapsGeoLookup(originGeoDeferred, qry.origin);
+          originPromises.push(originGeoDeferred.promise);
+        }
+        _.each(qry.destinations, function(destination) {
+          var destGeoDeferred = Q.defer();
+          exports.gmapsGeoLookup(destGeoDeferred, destination.location);
+          destinationPromises.push(destGeoDeferred.promise);
+        }, this);
+      }
+      var originPromisesDeferred = Q.defer();
+      Q.allSettled(originPromises).then(function(results) {
+        _.each(results, function(result) {
+          if (result.state === 'fulfilled') {
+            var val = result.value;
+            qry.origin.lat = val.lat;
+            qry.origin.lon = val.lon;
+          }
+          else {
+            console.log('originPromises allSettled:', result.error);
+          }
+        }, this);
+        originPromisesDeferred.resolve(qry.origin);
+      });
+      var destinationsPromisesDeferred = Q.defer();
+      Q.allSettled(destinationPromises).then(function(results) {
+        _.each(results, function(result, idx) {
+          if (result.state === 'fulfilled') {
+            var val = result.value;
+            qry.destinations[idx].location.lat = val.lat;
+            qry.destinations[idx].location.lon = val.lon;
+          }
+          else {
+            console.log('destinationPromises allSettled:', result.error);
+          }
+        }, this);
+        destinationsPromisesDeferred.resolve(qry.destinations);
+      });
+      Q.allSettled([originPromisesDeferred.promise, destinationsPromisesDeferred.promise]).then(function(results) {
+        //we don't care about the results returned, because they were modified in place in the qry object
+        //more importantly, we are now assured that all addresses have a lat and lon, if needGeo is true
+        var scorePromises = [];
+
+        //get the transport information from the origin to each destination using each transport mode
+        var origin = qry.origin;
+        _.each(qry.destinations, function(destination) {
+          //TODO check that weights add up for destinations
+          _.each(destination.modes, function(mode) {
+            //we have origin, destination, and mode
+            //TODO check that weights add up for modes
+            //now work out the transport information between this origin and this destination using this mode
+            var scoreDeferred = Q.defer();
+            scorePromises.push(scoreDeferred.promise);
+            exports.scoreOne(scoreDeferred, {
+              origin: origin,
+              destination: destination.location,
+              mode: mode,
+              journeyPlanner: qry.journeyPlanner
+            });
+          });
+        }, this);
+
+        Q.allSettled(scorePromises).then(function(scoreResults) {
+          var orig_dest_mode = {};
+          _.each(scoreResults, function(result) {
+            if (result.state === 'fulfilled') {
+              var score = result.value;
+              orig_dest_mode[score.origin.address] = 
+                orig_dest_mode[score.origin.address] || 
+                {};
+              orig_dest_mode[score.origin.address][score.destination.address] = 
+                orig_dest_mode[score.origin.address][score.destination.address] || 
+                {};
+              orig_dest_mode[score.origin.address][score.destination.address][score.mode.form] = 
+                orig_dest_mode[score.origin.address][score.destination.address][score.mode.form] || 
+                {
+                  origin: score.origin,
+                  destination: score.destination,
+                  mode: score.mode,
+                  score: score.score
+                };
+            }
+            else {
+              console.log('scorePromises allSettled:', result.error);
+            }
+          });
+
+          // parse weights to calculate aggregate score, iterate over original qry rather than score results,
+          //in case some results are rejections
+          var origin = qry.origin;
+          var destinationWeightSum = 0;
+          var destinationScoreSum = 0;
+          var calcErrors = [];
+          _.each(qry.destinations, function(destination) {
+            var destinationWeight = destination.weight || 1.0;
+            destinationWeightSum += destinationWeight;
+            var modeWeightSum = 0;
+            var modeScoreSum = 0;
+            _.each(destination.modes, function(mode) {
+              var modeWeight = mode.weight || 1.0;
+              modeWeightSum += modeWeight;
+              var modeScore = 0;
+              if (
+                orig_dest_mode[origin.address] &&
+                orig_dest_mode[origin.address][destination.location.address] &&
+                orig_dest_mode[origin.address][destination.location.address][mode.form]) {
+                modeScore = orig_dest_mode[origin.address][destination.location.address][mode.form].score;
+              }
+              else {
+                calcErrors.push('No data available for journey from '+origin.address+
+                  ' to '+destination.address+
+                  ' by '+mode.form);
+              }
+              modeScoreSum += (modeScore * modeWeight);
+            });
+            destinationScoreSum += (modeScoreSum / modeWeightSum * destinationWeight);
+          });
+          destinationScoreSum = destinationScoreSum / destinationWeightSum;
+          //divide by weight sums to scale to 0 to 1 range
+
+          var out = {
+            score: (destinationScoreSum * 0.5),
+            errors: calcErrors,
+            raw: scoreResults
+          };
+          deferred.resolve(out);
+        });
+      });
+      // setTimeout(function() {deferred.resolve({echo:qry})}, 1000); //DEBUG output
+    };
+
+---
+
+- Server `score` API after:
+
+    exports.score = function(deferred, qry) {
+      var validateErrs = validateScore(qry);
+      if (!validateErrs || validateErrs.length > 0) {
+        deferred.reject({
+          msg: 'Score could not be computed',
+          errors: validateErrs
+        });
+        return;
+      }
+      qry.journeyPlanner = qry.journeyPlanner || 'gmaps';
+
+      var scorePromises = [];
+      //get the transport information from the origin to each destination using each transport mode
+      var origin = qry.origin;
+      _.each(qry.destinations, function(destination) {
+        //TODO check that weights add up for destinations
+        _.each(destination.modes, function(mode) {
+          //we have origin, destination, and mode
+          //TODO check that weights add up for modes
+          //now work out the transport information between this origin and this destination using this mode
+          var scoreDeferred = Q.defer();
+          scorePromises.push(scoreDeferred.promise);
+          exports.scoreOne(scoreDeferred, {
+            origin: origin,
+            destination: destination.location,
+            mode: mode,
+            journeyPlanner: qry.journeyPlanner
+          });
+        });
+      });
+
+      Q.allSettled(scorePromises).then(function(scoreResults) {
+        var orig_dest_mode = {};
+        _.each(scoreResults, function(result) {
+          if (result.state === 'fulfilled') {
+            var score = result.value;
+            orig_dest_mode[score.origin.address] = 
+              orig_dest_mode[score.origin.address] || 
+              {};
+            orig_dest_mode[score.origin.address][score.destination.address] = 
+              orig_dest_mode[score.origin.address][score.destination.address] || 
+              {};
+            orig_dest_mode[score.origin.address][score.destination.address][score.mode.form] = 
+              orig_dest_mode[score.origin.address][score.destination.address][score.mode.form] || 
+              {
+                origin: score.origin,
+                destination: score.destination,
+                mode: score.mode,
+                score: score.score
+              };
+          }
+          else {
+            console.log('scorePromises allSettled:', result.error);
+          }
+        });
+
+        // parse weights to calculate aggregate score, iterate over original qry rather than score results,
+        //in case some results are rejections
+        var origin = qry.origin;
+        var destinationWeightSum = 0;
+        var destinationScoreSum = 0;
+        var calcErrors = [];
+        _.each(qry.destinations, function(destination) {
+          var destinationWeight = destination.weight || 1.0;
+          destinationWeightSum += destinationWeight;
+          var modeWeightSum = 0;
+          var modeScoreSum = 0;
+          _.each(destination.modes, function(mode) {
+            var modeWeight = mode.weight || 1.0;
+            modeWeightSum += modeWeight;
+            var modeScore = 0;
+            if (
+              orig_dest_mode[origin.address] &&
+              orig_dest_mode[origin.address][destination.location.address] &&
+              orig_dest_mode[origin.address][destination.location.address][mode.form]) {
+              modeScore = orig_dest_mode[origin.address][destination.location.address][mode.form].score;
+            }
+            else {
+              calcErrors.push('No data available for journey from '+origin.address+
+                ' to '+destination.address+
+                ' by '+mode.form);
+            }
+            modeScoreSum += (modeScore * modeWeight);
+          });
+          destinationScoreSum += (modeScoreSum / modeWeightSum * destinationWeight);
+        });
+        destinationScoreSum = destinationScoreSum / destinationWeightSum;
+        //divide by weight sums to scale to 0 to 1 range
+
+        var out = {
+          score: (destinationScoreSum * 0.5),
+          errors: calcErrors,
+          raw: scoreResults
+        };
+        deferred.resolve(out);
+      });
+    };
 
 ----
 
@@ -553,9 +856,12 @@ deferred.resolve(out);
 
 - Rewrite the `Q` spaghetti in [walkre](https://github.com/bguiz/walkre)
 	- Demonstrate how declaratively defining dependent queries can make code more comprehensible
-- Cyclic graph detection in dependent query queue validation
 - Feature to reference results of dependent queries *inline* in query data
 	- Kinda [like this](http://nmjenkins.com/presentations/network-speed.html#/17)
+- Separate [qryq](https://github.com/bguiz/qryq) into its own library
+  - Presently exists only within [walkre](https://github.com/bguiz/walkre)
+- Write unit tests
+- Pick a licence for this library
 
 ---
 
@@ -588,13 +894,13 @@ deferred.resolve(out);
 
 ### Farther Horizon
 
+- Cyclic graph detection in dependent query queue validation
 - Load testing/ stress testing
   - Start including high latency ops, e.g. disk I/O
   - Put Neil Jenkin's hypothesis to the test
 - Create a front end for this server
   - Full stack end to end load testing/ stress testing
-- Separate [qryq](https://github.com/bguiz/qryq) into its own library
-  - Presently exists only within [walkre](https://github.com/bguiz/walkre)
+- Create a NodeJs/ ExpressJs server wrapper for `qryq`
 
 ----
 
@@ -612,8 +918,10 @@ deferred.resolve(out);
 
 [@bguiz](http://twitter.com/bguiz)
 
-[qryq](https://github.com/bguiz/qryq)
+[http://bit.ly/qryq](http://bguiz.com/post/54620002947/qryq "qryq intro")
 
-[walkre](https://github.com/bguiz/walkre)
+[github.com/bguiz/qryq](https://github.com/bguiz/qryq "qryq source")
 
-[this preso](https://github.com/bguiz/qryq/blob/present/doco/present.md)
+[/doco/present/markdown/present.md](https://github.com/bguiz/qryq/blob/master/doco/present/markdown/present.md "this presentation")
+
+[github.com/bguiz/walkre](https://github.com/bguiz/walkre "walkre source")
