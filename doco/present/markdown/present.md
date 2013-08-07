@@ -25,30 +25,34 @@
 ## The Query Queue
 
 <pre>
-	<code>
+  <code>
 [
   {"id":"q1","depends":[],"api":"add","qry":{"a":1,"b":9}},
   {"id":"q2","depends":[],"api":"add","qry":{"a":99,"b":1}},
   {"id":"q3","depends":["q2","q1"],"api":"multiply","qry":{"a":"#{q1}","b":"#{q2}"}},
   {"id":"q4","depends":["q3"],"api":"multiply","qry":{"a":"#{q3}","b":5}}
 ]
-	</code>
+  </code>
 </pre>
-
----
 
 Can you guess what the result for `q4` is?
 
 ---
 
-    `q2`                          --> add(99, 1)          --> 100
-    `q1`                          --> add(1, 9)           --> 10
-    `q3` --> multiply(`q1`, `q2`) --> multiply(10, 100)   --> 1000
-    `q4` --> multiply(`q3`, 5)    --> multiply(1000, 5)   --> 5000
+<pre>
+  <code>
+`q2`                          --> add(99, 1)          --> 100
+`q1`                          --> add(1, 9)           --> 10
+`q3` --> multiply(`q1`, `q2`) --> multiply(10, 100)   --> 1000
+`q4` --> multiply(`q3`, 5)    --> multiply(1000, 5)   --> 5000
+  </code>
+</pre>
 
 Note that `q1` and `q2` may execute in any order, `q3` may only execute when both of them finish, and `q4` executes last.
 
-This is all taken care of by qryq, so long as you define the `depends` for each line appropriately
+This is all taken care of by qryq, so long as you define the `depends` for each line appropriately.
+
+What about `async`?
 
 ----
 
@@ -158,6 +162,8 @@ Dependencies
 - [Q](https://github.com/kriskowal/q)
 - [underscore.js](http://underscorejs.org)
 
+----
+
 ## Inspiration
 
 - Neil Jenkin's talk Tips, Tricks and Hacks in the Pursuit of Speed
@@ -205,14 +211,14 @@ POST /api/
 
 ----
 
-## Itch scratch
+## The Itch
 
 - NodeJs callback spaghetti
 - Fix this using promises
 - While better, if the code is sufficiently complex, you can still end up with:
 - Promise spaghetti
 
----
+----
 
 ### Light Bulb
 
@@ -577,6 +583,8 @@ exports.score = function(deferred, qry) {
 
 ## Parallel
 
+[github.com/bguiz/qryq](http://github.com/bguiz/qryq)
+
 <pre>
 	<code class="js">
 var numApiCalls = qry.length;
@@ -598,6 +606,8 @@ apiPromises.push(async(apiFunc, apiQry));
 
 ### Parallel
 
+[github.com/bguiz/qryq](http://github.com/bguiz/qryq)
+
 <pre>
 	<code class="js">
 Q.allSettled(apiPromises).then(function(apiResults) {
@@ -617,6 +627,8 @@ deferred.resolve(out);
 ----
 
 ## Sequential
+
+[github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
 	<code class="js">
@@ -644,6 +656,8 @@ sequentialLine(0);
 
 ### Sequential
 
+[github.com/bguiz/qryq](http://github.com/bguiz/qryq)
+
 ```javascript
 promise.then(
   function(result) {
@@ -669,6 +683,8 @@ promise.then(
 
 ## Dependent
 
+[github.com/bguiz/qryq](http://github.com/bguiz/qryq)
+
 <pre>
 	<code class="js">
 var linePromisesHash = {};
@@ -692,6 +708,8 @@ linePromisesHash[line.id] = linePromise;
 
 ### Dependent
 
+[github.com/bguiz/qryq](http://github.com/bguiz/qryq)
+
 <pre>
 	<code class="js">
 var dependentLine = function(line, apiFunc, linePromisesHash) {
@@ -713,6 +731,8 @@ var dependentLine = function(line, apiFunc, linePromisesHash) {
 ---
 
 ### Dependent
+
+[github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
 	<code class="js">
@@ -741,6 +761,8 @@ apiFunc(lineDeferred, lineQryWithDepends);
 ---
 
 ### Dependent
+
+[github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
 	<code class="js">
@@ -826,7 +848,7 @@ deferred.resolve(out);
 
 [@bguiz](http://twitter.com/bguiz)
 
-[http://bit.ly/qryq](http://bguiz.com/post/54620002947/qryq "qryq intro")
+[bit.ly/qryq](http://bguiz.com/post/54620002947/qryq "qryq intro")
 
 [github.com/bguiz/qryq](https://github.com/bguiz/qryq "qryq source")
 
