@@ -784,14 +784,15 @@ deferred.resolve(out);
 
 ## Horizon
 
-- Rewrite the `Q` spaghetti in [walkre](https://github.com/bguiz/walkre)
+- [x] Rewrite the `Q` spaghetti in [walkre](https://github.com/bguiz/walkre)
 	- Demonstrate how declaratively defining dependent queries can make code more comprehensible
-- Feature to reference results of dependent queries *inline* in query data
+- [x] Feature to reference results of dependent queries *inline* in query data
 	- Kinda [like this](http://nmjenkins.com/presentations/network-speed.html#/17)
-- Separate [qryq](https://github.com/bguiz/qryq) into its own library
+- [ ] Separate [qryq](https://github.com/bguiz/qryq) into its own library
   - Presently exists only within [walkre](https://github.com/bguiz/walkre)
-- Write unit tests
-- Pick a licence for this library
+- [ ] Write unit tests
+- [ ] Pick a licence for this library
+- [ ] Benchmarking for performance
 
 ---
 
@@ -824,19 +825,19 @@ deferred.resolve(out);
 
 ### Farther Horizon
 
-- Cyclic graph detection in dependent query queue validation
-- Load testing/ stress testing
+- [ ] Cyclic graph detection in dependent query queue validation
+- [ ] Load testing/ stress testing
   - Start including high latency ops, e.g. disk I/O
-  - Put Neil Jenkin's hypothesis to the test
-- Create a front end for this server
-  - Full stack end to end load testing/ stress testing
-- Create a NodeJs/ ExpressJs server wrapper for `qryq`
+- [ ] Create a front end for this server
+  - For full stack end to end load testing/ stress testing
+- [ ] Create a NodeJs/ ExpressJs server wrapper for `qryq`
+- [ ] Allow configurable parallelism
 
 ----
 
 ## Fin
 
-- Recommendation for load testing a nodejs server?
+- Recommendations for load testing a nodejs server?
 - What other libraries are there out that that perform this function? In other languages?
 - Submit some patches!
 
