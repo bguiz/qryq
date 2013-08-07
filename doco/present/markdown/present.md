@@ -426,48 +426,13 @@ exports.score = function(deferred, qry) {
         }
       });
 
-      // parse weights to calculate aggregate score, iterate over original qry rather than score results,
-      //in case some results are rejections
-      var origin = qry.origin;
-      var destinationWeightSum = 0;
-      var destinationScoreSum = 0;
-      var calcErrors = [];
-      _.each(qry.destinations, function(destination) {
-        var destinationWeight = destination.weight || 1.0;
-        destinationWeightSum += destinationWeight;
-        var modeWeightSum = 0;
-        var modeScoreSum = 0;
-        _.each(destination.modes, function(mode) {
-          var modeWeight = mode.weight || 1.0;
-          modeWeightSum += modeWeight;
-          var modeScore = 0;
-          if (
-            orig_dest_mode[origin.address] &&
-            orig_dest_mode[origin.address][destination.location.address] &&
-            orig_dest_mode[origin.address][destination.location.address][mode.form]) {
-            modeScore = orig_dest_mode[origin.address][destination.location.address][mode.form].score;
-          }
-          else {
-            calcErrors.push('No data available for journey from '+origin.address+
-              ' to '+destination.address+
-              ' by '+mode.form);
-          }
-          modeScoreSum += (modeScore * modeWeight);
-        });
-        destinationScoreSum += (modeScoreSum / modeWeightSum * destinationWeight);
-      });
-      destinationScoreSum = destinationScoreSum / destinationWeightSum;
-      //divide by weight sums to scale to 0 to 1 range
-
+      //some business logic
       var out = {
-        score: (destinationScoreSum * 0.5),
-        errors: calcErrors,
-        raw: scoreResults
+        /* ... */
       };
       deferred.resolve(out);
     });
   });
-  // setTimeout(function() {deferred.resolve({echo:qry})}, 1000); //DEBUG output
 };
 ```
 
@@ -532,45 +497,11 @@ exports.score = function(deferred, qry) {
       }
     });
 
-    // parse weights to calculate aggregate score, iterate over original qry rather than score results,
-    //in case some results are rejections
-    var origin = qry.origin;
-    var destinationWeightSum = 0;
-    var destinationScoreSum = 0;
-    var calcErrors = [];
-    _.each(qry.destinations, function(destination) {
-      var destinationWeight = destination.weight || 1.0;
-      destinationWeightSum += destinationWeight;
-      var modeWeightSum = 0;
-      var modeScoreSum = 0;
-      _.each(destination.modes, function(mode) {
-        var modeWeight = mode.weight || 1.0;
-        modeWeightSum += modeWeight;
-        var modeScore = 0;
-        if (
-          orig_dest_mode[origin.address] &&
-          orig_dest_mode[origin.address][destination.location.address] &&
-          orig_dest_mode[origin.address][destination.location.address][mode.form]) {
-          modeScore = orig_dest_mode[origin.address][destination.location.address][mode.form].score;
-        }
-        else {
-          calcErrors.push('No data available for journey from '+origin.address+
-            ' to '+destination.address+
-            ' by '+mode.form);
-        }
-        modeScoreSum += (modeScore * modeWeight);
-      });
-      destinationScoreSum += (modeScoreSum / modeWeightSum * destinationWeight);
-    });
-    destinationScoreSum = destinationScoreSum / destinationWeightSum;
-    //divide by weight sums to scale to 0 to 1 range
-
-    var out = {
-      score: (destinationScoreSum * 0.5),
-      errors: calcErrors,
-      raw: scoreResults
-    };
-    deferred.resolve(out);
+      //some business logic
+      var out = {
+        /* ... */
+      };
+      deferred.resolve(out);
   });
 };
 ```
