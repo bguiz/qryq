@@ -1,5 +1,7 @@
 # qryq
 
+## stop RESTing, start using query queues
+
 <sup>
 	/ˈkwərik/
 </sup>
@@ -20,59 +22,37 @@
 
 ----
 
-## Benefits
-
-- non-RESTful
-- readable && composable
-  - declarative query from client
-  - rather than imperative impl. on server
-  - avoids callback spaghetti || promise spaghetti
-
-----
-
-## Benefits
-
-- concatenation
-  - reduction in bandwidth && latency
-  - [protocol overhead](http://sd.wareonearth.com/~phil/net/overhead/)
-
-----
-
-## Benefits
-
-- less duplication of biz logic required (client/server)
-- groups several queries together as an atomic unit
-  - [asynchronous UIs](http://blog.alexmaccaw.com/asynchronous-ui)
-
-----
-
 ## The Query Queue
 
 <pre>
-	<code>
+  <code>
 [
   {"id":"q1","depends":[],"api":"add","qry":{"a":1,"b":9}},
   {"id":"q2","depends":[],"api":"add","qry":{"a":99,"b":1}},
   {"id":"q3","depends":["q2","q1"],"api":"multiply","qry":{"a":"#{q1}","b":"#{q2}"}},
   {"id":"q4","depends":["q3"],"api":"multiply","qry":{"a":"#{q3}","b":5}}
 ]
-	</code>
+  </code>
 </pre>
-
----
 
 Can you guess what the result for `q4` is?
 
 ---
 
-    `q2`                          --> add(99, 1)          --> 100
-    `q1`                          --> add(1, 9)           --> 10
-    `q3` --> multiply(`q1`, `q2`) --> multiply(10, 100)   --> 1000
-    `q4` --> multiply(`q3`, 5)    --> multiply(1000, 5)   --> 5000
+<pre>
+  <code>
+`q2`                          --> add(99, 1)          --> 100
+`q1`                          --> add(1, 9)           --> 10
+`q3` --> multiply(`q1`, `q2`) --> multiply(10, 100)   --> 1000
+`q4` --> multiply(`q3`, 5)    --> multiply(1000, 5)   --> 5000
+  </code>
+</pre>
 
 Note that `q1` and `q2` may execute in any order, `q3` may only execute when both of them finish, and `q4` executes last.
 
-This is all taken care of by qryq, so long as you define the `depends` for each line appropriately
+This is all taken care of by qryq, so long as you define the `depends` for each line appropriately.
+
+What about `async`?
 
 ----
 
@@ -103,6 +83,75 @@ From [`walkre`](https://github.com/bguiz/walkre "walkre")
 
 ----
 
+## Benefits
+
+- Developer productivity
+- Bandwidth & latency savings
+
+---
+
+### Benefits - Dev Productivity
+
+- Less need to write dedicated APIs
+  - Unix philosophy
+- readable && composable
+  - declarative query from client
+  - rather than imperative impl. on server
+  - avoids callback spaghetti && promise spaghetti
+
+---
+
+### Benefits - Dev Productivity
+
+
+- Less duplication of biz logic required
+  - Client/ server
+- Groups several queries together as an atomic unit
+  - [Asynchronous UIs](http://blog.alexmaccaw.com/asynchronous-ui)
+
+---
+
+### Benefits - 'Net Traffic
+
+- Concatenation
+  - Multiple requests
+  - Multiple responses
+- [Protocol overhead](http://sd.wareonearth.com/~phil/net/overhead/) minimised
+
+----
+
+## Limitations
+
+- non-RESTful
+- Testability?
+- Expression engine
+
+---
+
+### Limitations - REST
+
+- Do you need REST when you are *not* doing CRUD?
+- What if you typically chain more than one CRUD operation together?
+
+---
+
+### Limitations - Testing
+
+- Testing is made harder because clients may compose APIs in novel ways
+- Forces one to write more resilient/ robust code
+
+---
+
+### Limitations - Expressions
+
+- Expressions are limited
+- One `qry` references the result of another `qry` in the same `qryq`
+- Can only "drill down" through properties
+
+`#{previousQry}.flights.length`
+
+----
+
 ## Implementation
 
 Frameworks
@@ -112,6 +161,8 @@ Frameworks
 Dependencies
 - [Q](https://github.com/kriskowal/q)
 - [underscore.js](http://underscorejs.org)
+
+----
 
 ## Inspiration
 
@@ -160,14 +211,14 @@ POST /api/
 
 ----
 
-## Itch scratch
+## The Itch
 
 - NodeJs callback spaghetti
 - Fix this using promises
 - While better, if the code is sufficiently complex, you can still end up with:
 - Promise spaghetti
 
----
+----
 
 ### Light Bulb
 
@@ -375,48 +426,13 @@ exports.score = function(deferred, qry) {
         }
       });
 
-      // parse weights to calculate aggregate score, iterate over original qry rather than score results,
-      //in case some results are rejections
-      var origin = qry.origin;
-      var destinationWeightSum = 0;
-      var destinationScoreSum = 0;
-      var calcErrors = [];
-      _.each(qry.destinations, function(destination) {
-        var destinationWeight = destination.weight || 1.0;
-        destinationWeightSum += destinationWeight;
-        var modeWeightSum = 0;
-        var modeScoreSum = 0;
-        _.each(destination.modes, function(mode) {
-          var modeWeight = mode.weight || 1.0;
-          modeWeightSum += modeWeight;
-          var modeScore = 0;
-          if (
-            orig_dest_mode[origin.address] &&
-            orig_dest_mode[origin.address][destination.location.address] &&
-            orig_dest_mode[origin.address][destination.location.address][mode.form]) {
-            modeScore = orig_dest_mode[origin.address][destination.location.address][mode.form].score;
-          }
-          else {
-            calcErrors.push('No data available for journey from '+origin.address+
-              ' to '+destination.address+
-              ' by '+mode.form);
-          }
-          modeScoreSum += (modeScore * modeWeight);
-        });
-        destinationScoreSum += (modeScoreSum / modeWeightSum * destinationWeight);
-      });
-      destinationScoreSum = destinationScoreSum / destinationWeightSum;
-      //divide by weight sums to scale to 0 to 1 range
-
+      //some business logic
       var out = {
-        score: (destinationScoreSum * 0.5),
-        errors: calcErrors,
-        raw: scoreResults
+        /* ... */
       };
       deferred.resolve(out);
     });
   });
-  // setTimeout(function() {deferred.resolve({echo:qry})}, 1000); //DEBUG output
 };
 ```
 
@@ -481,45 +497,11 @@ exports.score = function(deferred, qry) {
       }
     });
 
-    // parse weights to calculate aggregate score, iterate over original qry rather than score results,
-    //in case some results are rejections
-    var origin = qry.origin;
-    var destinationWeightSum = 0;
-    var destinationScoreSum = 0;
-    var calcErrors = [];
-    _.each(qry.destinations, function(destination) {
-      var destinationWeight = destination.weight || 1.0;
-      destinationWeightSum += destinationWeight;
-      var modeWeightSum = 0;
-      var modeScoreSum = 0;
-      _.each(destination.modes, function(mode) {
-        var modeWeight = mode.weight || 1.0;
-        modeWeightSum += modeWeight;
-        var modeScore = 0;
-        if (
-          orig_dest_mode[origin.address] &&
-          orig_dest_mode[origin.address][destination.location.address] &&
-          orig_dest_mode[origin.address][destination.location.address][mode.form]) {
-          modeScore = orig_dest_mode[origin.address][destination.location.address][mode.form].score;
-        }
-        else {
-          calcErrors.push('No data available for journey from '+origin.address+
-            ' to '+destination.address+
-            ' by '+mode.form);
-        }
-        modeScoreSum += (modeScore * modeWeight);
-      });
-      destinationScoreSum += (modeScoreSum / modeWeightSum * destinationWeight);
-    });
-    destinationScoreSum = destinationScoreSum / destinationWeightSum;
-    //divide by weight sums to scale to 0 to 1 range
-
-    var out = {
-      score: (destinationScoreSum * 0.5),
-      errors: calcErrors,
-      raw: scoreResults
-    };
-    deferred.resolve(out);
+      //some business logic
+      var out = {
+        /* ... */
+      };
+      deferred.resolve(out);
   });
 };
 ```
@@ -531,6 +513,8 @@ exports.score = function(deferred, qry) {
 ----
 
 ## Parallel
+
+[github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
 	<code class="js">
@@ -553,6 +537,8 @@ apiPromises.push(async(apiFunc, apiQry));
 
 ### Parallel
 
+[github.com/bguiz/qryq](http://github.com/bguiz/qryq)
+
 <pre>
 	<code class="js">
 Q.allSettled(apiPromises).then(function(apiResults) {
@@ -572,6 +558,8 @@ deferred.resolve(out);
 ----
 
 ## Sequential
+
+[github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
 	<code class="js">
@@ -599,6 +587,8 @@ sequentialLine(0);
 
 ### Sequential
 
+[github.com/bguiz/qryq](http://github.com/bguiz/qryq)
+
 ```javascript
 promise.then(
   function(result) {
@@ -624,6 +614,8 @@ promise.then(
 
 ## Dependent
 
+[github.com/bguiz/qryq](http://github.com/bguiz/qryq)
+
 <pre>
 	<code class="js">
 var linePromisesHash = {};
@@ -647,6 +639,8 @@ linePromisesHash[line.id] = linePromise;
 
 ### Dependent
 
+[github.com/bguiz/qryq](http://github.com/bguiz/qryq)
+
 <pre>
 	<code class="js">
 var dependentLine = function(line, apiFunc, linePromisesHash) {
@@ -668,6 +662,8 @@ var dependentLine = function(line, apiFunc, linePromisesHash) {
 ---
 
 ### Dependent
+
+[github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
 	<code class="js">
@@ -697,6 +693,8 @@ apiFunc(lineDeferred, lineQryWithDepends);
 
 ### Dependent
 
+[github.com/bguiz/qryq](http://github.com/bguiz/qryq)
+
 <pre>
 	<code class="js">
 Q.allSettled(linePromises).then(function(lineResults) {
@@ -717,14 +715,15 @@ deferred.resolve(out);
 
 ## Horizon
 
-- Rewrite the `Q` spaghetti in [walkre](https://github.com/bguiz/walkre)
+- [x] Rewrite the `Q` spaghetti in [walkre](https://github.com/bguiz/walkre)
 	- Demonstrate how declaratively defining dependent queries can make code more comprehensible
-- Feature to reference results of dependent queries *inline* in query data
+- [x] Feature to reference results of dependent queries *inline* in query data
 	- Kinda [like this](http://nmjenkins.com/presentations/network-speed.html#/17)
-- Separate [qryq](https://github.com/bguiz/qryq) into its own library
+- [ ] Separate [qryq](https://github.com/bguiz/qryq) into its own library
   - Presently exists only within [walkre](https://github.com/bguiz/walkre)
-- Write unit tests
-- Pick a licence for this library
+- [ ] Write unit tests
+- [ ] Pick a licence for this library
+- [ ] Benchmarking for performance
 
 ---
 
@@ -757,19 +756,19 @@ deferred.resolve(out);
 
 ### Farther Horizon
 
-- Cyclic graph detection in dependent query queue validation
-- Load testing/ stress testing
+- [ ] Cyclic graph detection in dependent query queue validation
+- [ ] Load testing/ stress testing
   - Start including high latency ops, e.g. disk I/O
-  - Put Neil Jenkin's hypothesis to the test
-- Create a front end for this server
-  - Full stack end to end load testing/ stress testing
-- Create a NodeJs/ ExpressJs server wrapper for `qryq`
+- [ ] Create a front end for this server
+  - For full stack end to end load testing/ stress testing
+- [ ] Create a NodeJs/ ExpressJs server wrapper for `qryq`
+- [ ] Allow configurable parallelism
 
 ----
 
 ## Fin
 
-- Recommendation for load testing a nodejs server?
+- Recommendations for load testing a nodejs server?
 - What other libraries are there out that that perform this function? In other languages?
 - Submit some patches!
 
@@ -781,7 +780,7 @@ deferred.resolve(out);
 
 [@bguiz](http://twitter.com/bguiz)
 
-[http://bit.ly/qryq](http://bguiz.com/post/54620002947/qryq "qryq intro")
+[bit.ly/qryq](http://bguiz.com/post/54620002947/qryq "qryq intro")
 
 [github.com/bguiz/qryq](https://github.com/bguiz/qryq "qryq source")
 
