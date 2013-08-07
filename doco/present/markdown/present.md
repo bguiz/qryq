@@ -1,5 +1,7 @@
 # qryq
 
+## stop RESTing, start using query queues
+
 <sup>
 	/ˈkwərik/
 </sup>
@@ -17,32 +19,6 @@
 ## In one sentence
 
 `qry` is a NodeJs library that allows one to express a series of API queries and define the dependencies between them. These queries may be executed in parallel, in sequence, or in a directed acyclic graph.
-
-----
-
-## Benefits
-
-- non-RESTful
-- readable && composable
-  - declarative query from client
-  - rather than imperative impl. on server
-  - avoids callback spaghetti || promise spaghetti
-
-----
-
-## Benefits
-
-- concatenation
-  - reduction in bandwidth && latency
-  - [protocol overhead](http://sd.wareonearth.com/~phil/net/overhead/)
-
-----
-
-## Benefits
-
-- less duplication of biz logic required (client/server)
-- groups several queries together as an atomic unit
-  - [asynchronous UIs](http://blog.alexmaccaw.com/asynchronous-ui)
 
 ----
 
@@ -100,6 +76,75 @@ This is all taken care of by qryq, so long as you define the `depends` for each 
 </pre>
 
 From [`walkre`](https://github.com/bguiz/walkre "walkre")
+
+----
+
+## Benefits
+
+- Developer productivity
+- Bandwidth & latency savings
+
+---
+
+### Benefits - Dev Productivity
+
+- Less need to write dedicated APIs
+  - Unix philosophy
+- readable && composable
+  - declarative query from client
+  - rather than imperative impl. on server
+  - avoids callback spaghetti && promise spaghetti
+
+---
+
+### Benefits - Dev Productivity
+
+
+- Less duplication of biz logic required
+  - Client/ server
+- Groups several queries together as an atomic unit
+  - [Asynchronous UIs](http://blog.alexmaccaw.com/asynchronous-ui)
+
+---
+
+### Benefits - 'Net Traffic
+
+- Concatenation
+  - Multiple requests
+  - Multiple responses
+- [Protocol overhead](http://sd.wareonearth.com/~phil/net/overhead/) minimised
+
+----
+
+## Limitations
+
+- non-RESTful
+- Testability?
+- Expression engine
+
+---
+
+### Limitations - REST
+
+- Do you need REST when you are *not* doing CRUD?
+- What if you typically chain more than one CRUD operation together?
+
+---
+
+### Limitations - Testing
+
+- Testing is made harder because clients may compose APIs in novel ways
+- Forces one to write more resilient/ robust code
+
+---
+
+### Limitations - Expressions
+
+- Expressions are limited
+- One `qry` references the result of another `qry` in the same `qryq`
+- Can only "drill down" through properties
+
+`#{previousQry}.flights.length`
 
 ----
 
