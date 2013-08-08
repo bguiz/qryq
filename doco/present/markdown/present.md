@@ -57,7 +57,9 @@ The wiring is done automatically by `qryq`
 What about `async`?
 
 - You can accomplish the same thing using `async`
-- ... but a lot more complex
+  - Sequential: On par
+  - Parallel: On par
+  - Dependent: Made a lot easier
 - Focus on dev productivity
 
 ----
@@ -271,17 +273,23 @@ and I prefer the latter
 
 ---
 
-- Using qryq, the request made by the client is bigger
+- Request made by the client
+- Before - 3 separate queries:
 
-Before:
+```
+to gmapsGeoLookup:
+{"address":"36 Meadow Wood Walk, Narre Warren VIC 3805"}
+{"address":"19 Bourke Street, Melbourne, VIC 3000"}
+```
 
-```javascript
+```
+to score:
 {
-  "origin":{"address":"36 Meadow Wood Walk, Narre Warren VIC 3805"},
+  "origin":{"address":"36 Meadow Wood Walk, Narre Warren VIC 3805","lat":"123.999","lon":"456.999"},
   "journeyPlanner":"melbtrans",
   "destinations":[
     {
-      "fixed":true,"class":"work","weight":0.8,"location":{"address":"19 Bourke Street, Melbourne, VIC 3000"},
+      "fixed":true,"class":"work","weight":0.8,"location":{"address":"19 Bourke Street, Melbourne, VIC 3000","lat":"789.111","lon":"123.111"},
       "modes":[{"form":"transit","max":{"time":2400}}]
     }
   ]
@@ -290,11 +298,10 @@ Before:
 
 ---
 
-- Using qryq, the request made by the client is bigger
+- Request made by the client
+- After - a single query:
 
-After:
-
-```javascript
+```
 [
   {"id":"qGeocodeOrigin","depends":[],"api":"gmapsGeoLookup","qry":{"address":"36 Meadow Wood Walk, Narre Warren VIC 3805"}},
   {"id":"qGeocodeDestination","depends":[],"api":"gmapsGeoLookup","qry":{"address":"19 Bourke Street, Melbourne, VIC 3000"}},
