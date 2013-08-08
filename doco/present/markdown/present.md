@@ -3,7 +3,7 @@
 ## stop RESTing, start using query queues
 
 <sup>
-	/ˈkwərik/
+  /ˈkwərik/
 </sup>
 
 ### Brendan Graetz
@@ -14,11 +14,9 @@
 
 [bguiz.com](http://bguiz.com "Brendan Graetz")
 
-----
-
 ## In one sentence
 
-`qry` is a NodeJs library that allows one to express a series of API queries and define the dependencies between them. These queries may be executed in parallel, in sequence, or in a directed acyclic graph.
+`qryq` is a NodeJs library that allows one to express a series of API queries and define dependencies between them either in parallel, in sequence, or in a directed acyclic graph.
 
 ----
 
@@ -27,17 +25,17 @@
 <pre>
   <code>
 [
-  {"id":"q1","depends":[],"api":"add","qry":{"a":1,"b":9}},
-  {"id":"q2","depends":[],"api":"add","qry":{"a":99,"b":1}},
-  {"id":"q3","depends":["q2","q1"],"api":"multiply","qry":{"a":"#{q1}","b":"#{q2}"}},
-  {"id":"q4","depends":["q3"],"api":"multiply","qry":{"a":"#{q3}","b":5}}
+  {id: "q1", api: "add",
+    qry:{a:1, b:9}},
+  {id: "q2", api: "add",
+    qry:{a:99, b:1}},
+  {id: "q3", api: "multiply",
+    qry:{a: "#{q1}", b: "#{q2}"}},
+  {id: "q4", api: "multiply",
+    qry:{a: "#{q3}", b:5}}
 ]
   </code>
 </pre>
-
-Can you guess what the result for `q4` is?
-
----
 
 <pre>
   <code>
@@ -48,11 +46,19 @@ Can you guess what the result for `q4` is?
   </code>
 </pre>
 
-Note that `q1` and `q2` may execute in any order, `q3` may only execute when both of them finish, and `q4` executes last.
+- Note that `q1` and `q2` may execute in any order,
+- `q3` may only execute when both of them finish,
+- and `q4` executes last.
 
-This is all taken care of by qryq, so long as you define the `depends` for each line appropriately.
+The wiring is done automatically by `qryq`
+
+---
 
 What about `async`?
+
+- You can accomplish the same thing using `async`
+- ... but a lot more complex
+- Focus on dev productivity
 
 ----
 
@@ -174,7 +180,7 @@ Dependencies
 ---
 
 <pre>
-	<code class="js">
+  <code class="js">
 POST /api/
 
 [
@@ -188,7 +194,7 @@ POST /api/
         sort: 'date descending'
     }]
 ]
-	</code>
+  </code>
 </pre>
 
 ---
@@ -202,11 +208,11 @@ POST /api/
 ---
 
 <div>
-	<iframe src="http://www.slideshare.net/slideshow/embed_code/22423382?rel=0&startSlide=85" width="512" height="421" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen webkitallowfullscreen mozallowfullscreen>
-	</iframe>
-	<div style="margin-bottom:5px">
-		<strong> <a href="http://www.slideshare.net/brikis98/the-play-framework-at-linkedin" title="The Play Framework at LinkedIn" target="_blank">The Play Framework at LinkedIn</a></strong> from <strong><a href="http://www.slideshare.net/brikis98" target="_blank">Yevgeniy Brikman</a></strong>
-	</div>
+  <iframe src="http://www.slideshare.net/slideshow/embed_code/22423382?rel=0&startSlide=85" width="512" height="421" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen webkitallowfullscreen mozallowfullscreen>
+  </iframe>
+  <div style="margin-bottom:5px">
+    <strong> <a href="http://www.slideshare.net/brikis98/the-play-framework-at-linkedin" title="The Play Framework at LinkedIn" target="_blank">The Play Framework at LinkedIn</a></strong> from <strong><a href="http://www.slideshare.net/brikis98" target="_blank">Yevgeniy Brikman</a></strong>
+  </div>
 </div>
 
 ----
@@ -517,7 +523,7 @@ exports.score = function(deferred, qry) {
 [github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
-	<code class="js">
+  <code class="js">
 var numApiCalls = qry.length;
 var apiPromises = [];
 _.each(qry, function(line) {
@@ -530,7 +536,7 @@ if (!apiFunc) {
 }
 apiPromises.push(async(apiFunc, apiQry));
 });
-	</code>
+  </code>
 </pre>
 
 ---
@@ -540,7 +546,7 @@ apiPromises.push(async(apiFunc, apiQry));
 [github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
-	<code class="js">
+  <code class="js">
 Q.allSettled(apiPromises).then(function(apiResults) {
 var out = [];
 _.each(apiResults, function(apiResult, idx) {
@@ -552,7 +558,7 @@ _.each(apiResults, function(apiResult, idx) {
 });
 deferred.resolve(out);
 });
-	</code>
+  </code>
 </pre>
 
 ----
@@ -562,7 +568,7 @@ deferred.resolve(out);
 [github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
-	<code class="js">
+  <code class="js">
 var numApiCalls = qry.length;
 var out = [];
 function sequentialLine(idx) {
@@ -580,7 +586,7 @@ promise.then(
 );
 }
 sequentialLine(0);
-	</code>
+  </code>
 </pre>
 
 ---
@@ -617,7 +623,7 @@ promise.then(
 [github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
-	<code class="js">
+  <code class="js">
 var linePromisesHash = {};
 var linePromises = [];
 _.each(qry, function(line) {
@@ -632,7 +638,7 @@ var linePromise = dependentLine(line, apiFunc, linePromisesHash);
 linePromises.push(linePromise);
 linePromisesHash[line.id] = linePromise;
 });
-	</code>
+  </code>
 </pre>
 
 ---
@@ -642,7 +648,7 @@ linePromisesHash[line.id] = linePromise;
 [github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
-	<code class="js">
+  <code class="js">
 var dependentLine = function(line, apiFunc, linePromisesHash) {
   var lineDeferred = Q.defer();
   var dependsPromises = [];
@@ -656,7 +662,7 @@ var dependentLine = function(line, apiFunc, linePromisesHash) {
   });
   return lineDeferred.promise;
 };
-	</code>
+  </code>
 </pre>
 
 ---
@@ -666,7 +672,7 @@ var dependentLine = function(line, apiFunc, linePromisesHash) {
 [github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
-	<code class="js">
+  <code class="js">
 Q.allSettled(dependsPromises).then(function(dependsResults) {
 var dependsResultsHash = {};
 _.each(dependsResults, function(depResult, idx) {
@@ -686,7 +692,7 @@ _.extend(
 );
 apiFunc(lineDeferred, lineQryWithDepends);
 });
-	</code>
+  </code>
 </pre>
 
 ---
@@ -696,7 +702,7 @@ apiFunc(lineDeferred, lineQryWithDepends);
 [github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
-	<code class="js">
+  <code class="js">
 Q.allSettled(linePromises).then(function(lineResults) {
 var out = [];
 _.each(lineResults, function(lineResult, idx) {
@@ -708,7 +714,7 @@ _.each(lineResults, function(lineResult, idx) {
 });
 deferred.resolve(out);
 });
-	</code>
+  </code>
 </pre>
 
 ----
@@ -716,41 +722,14 @@ deferred.resolve(out);
 ## Horizon
 
 - [x] Rewrite the `Q` spaghetti in [walkre](https://github.com/bguiz/walkre)
-	- Demonstrate how declaratively defining dependent queries can make code more comprehensible
+  - Demonstrate how declaratively defining dependent queries can make code more comprehensible
 - [x] Feature to reference results of dependent queries *inline* in query data
-	- Kinda [like this](http://nmjenkins.com/presentations/network-speed.html#/17)
+  - Kinda [like this](http://nmjenkins.com/presentations/network-speed.html#/17)
 - [ ] Separate [qryq](https://github.com/bguiz/qryq) into its own library
   - Presently exists only within [walkre](https://github.com/bguiz/walkre)
 - [ ] Write unit tests
 - [ ] Pick a licence for this library
 - [ ] Benchmarking for performance
-
----
-
-<pre>
-	<code class="js">
-[
-    [ 'setMailboxes', {
-        create: {
-            '123': {
-                name: 'Important'
-            }
-        }
-    }],
-    [ 'setPopLinks', {
-        create: {
-            '124': {
-                server: 'pop.live.com',
-                port: 110,
-                username: 'testuser@live.com'
-                password: 'letmein'
-                folder: '#123'
-            }
-        }
-    }]
-]
-	</code>
-</pre>
 
 ---
 
