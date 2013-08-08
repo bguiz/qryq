@@ -14,9 +14,11 @@
 
 [bguiz.com](http://bguiz.com "Brendan Graetz")
 
+----
+
 ## In one sentence
 
-`qryq` is a NodeJs library that allows one to express a series of API queries and define dependencies between them either in parallel, in sequence, or in a directed acyclic graph.
+`qryq` is a NodeJs library that allows one to express a series of queries and define dependencies between them either in parallel, in sequence, or in a directed acyclic graph.
 
 ----
 
@@ -25,14 +27,10 @@
 <pre>
   <code>
 [
-  {id: "q1", api: "add",
-    qry:{a:1, b:9}},
-  {id: "q2", api: "add",
-    qry:{a:99, b:1}},
-  {id: "q3", api: "multiply",
-    qry:{a: "#{q1}", b: "#{q2}"}},
-  {id: "q4", api: "multiply",
-    qry:{a: "#{q3}", b:5}}
+  {id: "q1", api: "add", qry:{a:1, b:9}},
+  {id: "q2", api: "add qry:{a:99, b:1}},
+  {id: "q3", api: "multiply", qry:{a: "#{q1}", b: "#{q2}"}},
+  {id: "q4", api: "multiply", qry:{a: "#{q3}", b:5}}
 ]
   </code>
 </pre>
@@ -46,21 +44,19 @@
   </code>
 </pre>
 
-- Note that `q1` and `q2` may execute in any order,
-- `q3` may only execute when both of them finish,
+- `q1` and `q2` may execute in any order,
+- `q3` may only execute after *both* `q1` and `q2`,
 - and `q4` executes last.
-
-The wiring is done automatically by `qryq`
+- Wiring is done automatically by `qryq`
 
 ---
 
-What about `async`?
+### What about async?
 
-- You can accomplish the same thing using `async`
-  - Sequential: On par
-  - Parallel: On par
-  - Dependent: Made a lot easier
-- Focus on dev productivity
+- Dev productivity in accomplishing the same thing:
+  - Sequential: ~Same
+  - Parallel: ~Same
+  - Dependent: A lot easier
 
 ----
 
@@ -100,12 +96,21 @@ From [`walkre`](https://github.com/bguiz/walkre "walkre")
 
 ### Benefits - Dev Productivity
 
-- Less need to write dedicated APIs
-  - Unix philosophy
-- readable && composable
-  - declarative query from client
-  - rather than imperative impl. on server
-  - avoids callback spaghetti && promise spaghetti
+<blockquote>
+This is the Unix philosophy: Write programs that do one thing and do it well. Write programs to work together.
+</blockquote>
+
+-- Doug McIlroy, invented pipes in the UNIX command line
+
+---
+
+### Benefits - Dev Productivity
+
+- Less need to write dedicated API endpoints
+  - instead write small API endpoints, and chain them together
+  - readable && composable
+  - declarative query rather than imperative
+  - avoid callback spaghetti && promise spaghetti
 
 ---
 
@@ -121,7 +126,7 @@ From [`walkre`](https://github.com/bguiz/walkre "walkre")
 
 ### Benefits - 'Net Traffic
 
-- Concatenation
+- Concatenation of
   - Multiple requests
   - Multiple responses
 - [Protocol overhead](http://sd.wareonearth.com/~phil/net/overhead/) minimised
@@ -145,18 +150,19 @@ From [`walkre`](https://github.com/bguiz/walkre "walkre")
 
 ### Limitations - Testing
 
-- Testing is made harder because clients may compose APIs in novel ways
-- Forces one to write more resilient/ robust code
+- Harder because clients may compose API calls in novel ways
+- Need to write more robust code
 
 ---
 
 ### Limitations - Expressions
 
-- Expressions are limited
-- One `qry` references the result of another `qry` in the same `qryq`
-- Can only "drill down" through properties
+- A `qry` references results of another `qry` in the same `qryq`
+- Limited: Can only "drill down" through properties
 
+<blockquote>
 `#{previousQry}.flights.length`
+</blockquote>
 
 ----
 
