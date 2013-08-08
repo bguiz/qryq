@@ -1,3 +1,9 @@
+emphasise dev productivity
+draw diagram for directed acyclic graph
+draw diagram for callback and promise spaghetti
+show promises in play
+rearrange to bring forth itch and lightbulb first
+
 # qryq
 
 ## stop RESTing, start using query queues
@@ -19,6 +25,115 @@
 ## In one sentence
 
 `qryq` is a NodeJs library that allows one to express a series of queries and define dependencies between them either in parallel, in sequence, or in a directed acyclic graph.
+
+----
+
+## Implementation
+
+Frameworks
+- [node.js](http://nodejs.org)
+- [express.js](expressjs.com)
+
+Dependencies
+- [Q](https://github.com/kriskowal/q)
+- [underscore.js](http://underscorejs.org)
+
+----
+
+## Inspiration
+
+- Neil Jenkin's talk Tips, Tricks and Hacks in the Pursuit of Speed
+  - [REST is slow](http://nmjenkins.com/presentations/network-speed.html#/14)
+  - [Concatenate requests](http://nmjenkins.com/presentations/network-speed.html#/15)
+  - [Concatenate responses](http://nmjenkins.com/presentations/network-speed.html#/16)
+
+---
+
+<pre>
+  <code class="js">
+POST /api/
+
+[
+    [ 'deleteMessages', {
+        idList: [ 'msg1' ]
+    }],
+    [ 'getMailboxMessageList', {
+        mailboxName: 'Inbox',
+        position: 0,
+        limit: 30,
+        sort: 'date descending'
+    }]
+]
+  </code>
+</pre>
+
+---
+
+## Inspiration
+
+- [Play framework](http://playframework.com)'s
+  - [Linkedin talk by Yevgeniy Brikman](http://www.slideshare.net/brikis98/the-play-framework-at-linkedin)
+  - See slides 85 through 88
+
+---
+
+<div>
+  <iframe src="http://www.slideshare.net/slideshow/embed_code/22423382?rel=0&startSlide=85" width="512" height="421" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen webkitallowfullscreen mozallowfullscreen>
+  </iframe>
+  <div style="margin-bottom:5px">
+    <strong> <a href="http://www.slideshare.net/brikis98/the-play-framework-at-linkedin" title="The Play Framework at LinkedIn" target="_blank">The Play Framework at LinkedIn</a></strong> from <strong><a href="http://www.slideshare.net/brikis98" target="_blank">Yevgeniy Brikman</a></strong>
+  </div>
+</div>
+
+----
+
+## The Itch
+
+- NodeJs callback spaghetti
+- Fix this using promises
+- While better, if the code is sufficiently complex, you can still end up with:
+- Promise spaghetti
+
+----
+
+### Light Bulb
+
+I would like to process a series of data, where the output of each may be used as inputs into the others.
+
+For example:
+
+<pre>
+  <code class="js">
+var batch = [
+  {"id":"a1","depends":[],"data":{"some":"data a1"}},
+  {"id":"b1","depends":["a1"],"data":{"some":"data b1"}},
+  {"id":"b2","depends":["a1"],"data":{"some":"data b2"}},
+  {"id":"c1","depends":["b1","b2"],"data":{"some":"data c1"}},
+  {"id":"x1","depends":[],"data":{"some":"data x1"}},
+];
+  </code>
+</pre>
+
+This means that once `a1` is complete, its output will be sent to both `b1` and `b2`;
+and when these complete, both of their output will be sent to `c1` (only upon both of their completion.
+`x1` may execute in parallel with all of `a1`, `b1`, `b2`, and `c1`;
+and `b1` may execute in parallel with `b2`, as no `depends` between them are defined.
+
+---
+
+### Light Bulb
+
+Upon completion of `c1` and `x1`, and therefore the completion of all 5 of them, the output of all five should be returned.
+
+We will assume that no circular dependencies are defined, and thus is a directed acyclic graph (DAG)
+
+I would like to know how to implement this using [Q](https://github.com/kriskowal/q/wiki/API-Reference), because:
+
+- All the processing of the data will be asynchronous, and thus I will need to use either callbacks, or deferreds and promises;
+and I prefer the latter
+- Promises can double up as a convenient way to define the edges in the graph
+
+----
 
 ----
 
@@ -166,116 +281,9 @@ This is the Unix philosophy: Write programs that do one thing and do it well. Wr
 
 ----
 
-## Implementation
-
-Frameworks
-- [node.js](http://nodejs.org)
-- [express.js](expressjs.com)
-
-Dependencies
-- [Q](https://github.com/kriskowal/q)
-- [underscore.js](http://underscorejs.org)
-
-----
-
-## Inspiration
-
-- Neil Jenkin's talk Tips, Tricks and Hacks in the Pursuit of Speed
-  - [REST is slow](http://nmjenkins.com/presentations/network-speed.html#/14)
-  - [Concatenate requests](http://nmjenkins.com/presentations/network-speed.html#/15)
-  - [Concatenate responses](http://nmjenkins.com/presentations/network-speed.html#/16)
-
----
-
-<pre>
-  <code class="js">
-POST /api/
-
-[
-    [ 'deleteMessages', {
-        idList: [ 'msg1' ]
-    }],
-    [ 'getMailboxMessageList', {
-        mailboxName: 'Inbox',
-        position: 0,
-        limit: 30,
-        sort: 'date descending'
-    }]
-]
-  </code>
-</pre>
-
----
-
-## Inspiration
-
-- [Play framework](http://playframework.com)'s
-  - [Linkedin talk by Yevgeniy Brikman](http://www.slideshare.net/brikis98/the-play-framework-at-linkedin)
-  - See slides 85 through 88
-
----
-
-<div>
-  <iframe src="http://www.slideshare.net/slideshow/embed_code/22423382?rel=0&startSlide=85" width="512" height="421" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen webkitallowfullscreen mozallowfullscreen>
-  </iframe>
-  <div style="margin-bottom:5px">
-    <strong> <a href="http://www.slideshare.net/brikis98/the-play-framework-at-linkedin" title="The Play Framework at LinkedIn" target="_blank">The Play Framework at LinkedIn</a></strong> from <strong><a href="http://www.slideshare.net/brikis98" target="_blank">Yevgeniy Brikman</a></strong>
-  </div>
-</div>
-
-----
-
-## The Itch
-
-- NodeJs callback spaghetti
-- Fix this using promises
-- While better, if the code is sufficiently complex, you can still end up with:
+Avoiding spaghetti
+- Callback spaghetti
 - Promise spaghetti
-
-----
-
-### Light Bulb
-
-I would like to process a series of data, where the output of each may be used as inputs into the others.
-
-For example:
-
-<pre>
-  <code class="js">
-var batch = [
-  {"id":"a1","depends":[],"data":{"some":"data a1"}},
-  {"id":"b1","depends":["a1"],"data":{"some":"data b1"}},
-  {"id":"b2","depends":["a1"],"data":{"some":"data b2"}},
-  {"id":"c1","depends":["b1","b2"],"data":{"some":"data c1"}},
-  {"id":"x1","depends":[],"data":{"some":"data x1"}},
-];
-  </code>
-</pre>
-
-This means that once `a1` is complete, its output will be sent to both `b1` and `b2`;
-and when these complete, both of their output will be sent to `c1` (only upon both of their completion.
-`x1` may execute in parallel with all of `a1`, `b1`, `b2`, and `c1`;
-and `b1` may execute in parallel with `b2`, as no `depends` between them are defined.
-
----
-
-### Light Bulb
-
-Upon completion of `c1` and `x1`, and therefore the completion of all 5 of them, the output of all five should be returned.
-
-We will assume that no circular dependencies are defined, and thus is a directed acyclic graph (DAG)
-
-I would like to know how to implement this using [Q](https://github.com/kriskowal/q/wiki/API-Reference), because:
-
-- All the processing of the data will be asynchronous, and thus I will need to use either callbacks, or deferreds and promises;
-and I prefer the latter
-- Promises can double up as a convenient way to define the edges in the graph
-
-----
-
-- `Q` spaghetti
-- Code demonstrating how *not* to use promises
-- Code demonstrating how to do the same thing, using query queues
 
 ---
 
@@ -336,6 +344,7 @@ to score:
 ---
 
 - Server `score` API before:
+- Demonstrates how *not* to use promises
 
 ```javascript
 exports.score = function(deferred, qry) {
@@ -458,6 +467,7 @@ exports.score = function(deferred, qry) {
 ---
 
 - Server `score` API after:
+- Demonstrates how to do the same thing, using query queues
 - ~Half the numebr of lines of code required
 
 ```javascript
