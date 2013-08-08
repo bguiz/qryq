@@ -445,6 +445,7 @@ exports.score = function(deferred, qry) {
 ---
 
 - Server `score` API after:
+- ~Half the numebr of lines of code required
 
 ```javascript
 exports.score = function(deferred, qry) {
@@ -511,6 +512,56 @@ exports.score = function(deferred, qry) {
   });
 };
 ```
+
+----
+
+## Horizon
+
+- [x] Rewrite the `Q` spaghetti in [walkre](https://github.com/bguiz/walkre)
+  - Demonstrate how declaratively defining dependent queries can make code more comprehensible
+- [x] Feature to reference results of dependent queries *inline* in query data
+  - Kinda [like this](http://nmjenkins.com/presentations/network-speed.html#/17)
+- [ ] Separate [qryq](https://github.com/bguiz/qryq) into its own library
+  - Presently exists only within [walkre](https://github.com/bguiz/walkre)
+- [ ] Write unit tests
+- [ ] Pick a licence for this library
+- [ ] Benchmarking for performance
+
+---
+
+### Farther Horizon
+
+- [ ] Cyclic graph detection in dependent query queue validation
+- [ ] Load testing/ stress testing
+  - Start including high latency ops, e.g. disk I/O
+- [ ] Create a front end for this server
+  - For full stack end to end load testing/ stress testing
+- [ ] Create a NodeJs/ ExpressJs server wrapper for `qryq`
+- [ ] Allow configurable parallelism
+
+----
+
+## Fin
+
+- Recommendations for load testing a nodejs server?
+- What other libraries are there out that that perform this function? In other languages?
+- Submit some patches!
+
+----
+
+## Thank you
+
+[bguiz.com](http://bguiz.com)
+
+[@bguiz](http://twitter.com/bguiz)
+
+[bit.ly/qryq](http://bguiz.com/post/54620002947/qryq "qryq intro")
+
+[github.com/bguiz/qryq](https://github.com/bguiz/qryq "qryq source")
+
+[/doco/present/markdown/present.md](https://github.com/bguiz/qryq/blob/master/doco/present/markdown/present.md "this presentation")
+
+[github.com/bguiz/walkre](https://github.com/bguiz/walkre "walkre source")
 
 ----
 
@@ -716,53 +767,3 @@ deferred.resolve(out);
 });
   </code>
 </pre>
-
-----
-
-## Horizon
-
-- [x] Rewrite the `Q` spaghetti in [walkre](https://github.com/bguiz/walkre)
-  - Demonstrate how declaratively defining dependent queries can make code more comprehensible
-- [x] Feature to reference results of dependent queries *inline* in query data
-  - Kinda [like this](http://nmjenkins.com/presentations/network-speed.html#/17)
-- [ ] Separate [qryq](https://github.com/bguiz/qryq) into its own library
-  - Presently exists only within [walkre](https://github.com/bguiz/walkre)
-- [ ] Write unit tests
-- [ ] Pick a licence for this library
-- [ ] Benchmarking for performance
-
----
-
-### Farther Horizon
-
-- [ ] Cyclic graph detection in dependent query queue validation
-- [ ] Load testing/ stress testing
-  - Start including high latency ops, e.g. disk I/O
-- [ ] Create a front end for this server
-  - For full stack end to end load testing/ stress testing
-- [ ] Create a NodeJs/ ExpressJs server wrapper for `qryq`
-- [ ] Allow configurable parallelism
-
-----
-
-## Fin
-
-- Recommendations for load testing a nodejs server?
-- What other libraries are there out that that perform this function? In other languages?
-- Submit some patches!
-
-----
-
-## Thank you
-
-[bguiz.com](http://bguiz.com)
-
-[@bguiz](http://twitter.com/bguiz)
-
-[bit.ly/qryq](http://bguiz.com/post/54620002947/qryq "qryq intro")
-
-[github.com/bguiz/qryq](https://github.com/bguiz/qryq "qryq source")
-
-[/doco/present/markdown/present.md](https://github.com/bguiz/qryq/blob/master/doco/present/markdown/present.md "this presentation")
-
-[github.com/bguiz/walkre](https://github.com/bguiz/walkre "walkre source")
