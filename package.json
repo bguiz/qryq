@@ -1,6 +1,6 @@
 {
   "name": "qryq",
-  "description": "Manages, using promises, a list of API queries, which may be executed in parallel, in sequence, or in an order required by specified dependency of one API query upon the results of zero or more other API queries in the same list where these dependencies form a directed acyclic graph.",
+  "description": "Express a series of queries and define dependencies between them either in parallel, in sequence, or in a directed acyclic graph",
   "author": "Brendan Graetz <redacted@my.email> (http://bguiz.com)",
   "config": {
     "defaults": {
@@ -28,7 +28,8 @@
   },
   "keywords": [],
   "license": {
-    "type": "undecided",
-    "url": "https://github.com/bguiz/qryq"
+    "type": "GPL v3",
+    "url": "http://opensource.org/licenses/GPL-3.0"
   }
 }
+
