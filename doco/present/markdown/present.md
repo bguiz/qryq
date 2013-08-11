@@ -3,7 +3,7 @@
 ## stop RESTing, start using query queues
 
 <sup>
-	/ˈkwərik/
+  /ˈkwərik/
 </sup>
 
 ### Brendan Graetz
@@ -18,7 +18,95 @@
 
 ## In one sentence
 
-`qry` is a NodeJs library that allows one to express a series of API queries and define the dependencies between them. These queries may be executed in parallel, in sequence, or in a directed acyclic graph.
+`qryq` is a NodeJs library that allows one to express a series of queries and define dependencies between them either in parallel, in sequence, or in a directed acyclic graph.
+
+![Directed Acyclic Graph](http://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Directed_acyclic_graph_3.svg/356px-Directed_acyclic_graph_3.svg.png)
+
+---
+
+<blockquote>
+A directed graph with no directed cycles.<br />
+That is, it is formed by a collection of vertices and directed edges, each edge connecting one vertex to another, such that there is no way to start at some vertex v and follow a sequence of edges that eventually loops back to v again
+</blockquote>
+
+-- [Directed acyclic graph](http://en.wikipedia.org/wiki/Directed_acyclic_graph)
+
+----
+
+## Implementation
+
+Frameworks
+- [node.js](http://nodejs.org)
+- [express.js](expressjs.com)
+
+Dependencies
+- [Q](https://github.com/kriskowal/q)
+- [underscore.js](http://underscorejs.org)
+
+----
+
+## Inspiration
+
+- Neil Jenkin's talk Tips, Tricks and Hacks in the Pursuit of Speed
+  - [REST is slow](http://nmjenkins.com/presentations/network-speed.html#/14)
+  - [Concatenate requests](http://nmjenkins.com/presentations/network-speed.html#/15)
+  - [Concatenate responses](http://nmjenkins.com/presentations/network-speed.html#/16)
+
+---
+
+<pre>
+  <code class="js">
+POST /api/
+
+[
+    [ 'deleteMessages', {
+        idList: [ 'msg1' ]
+    }],
+    [ 'getMailboxMessageList', {
+        mailboxName: 'Inbox',
+        position: 0,
+        limit: 30,
+        sort: 'date descending'
+    }]
+]
+  </code>
+</pre>
+
+---
+
+## Inspiration
+
+- [Play framework](http://playframework.com)'s
+  - [Linkedin talk by Yevgeniy Brikman](http://www.slideshare.net/brikis98/the-play-framework-at-linkedin)
+  - See slides 85 through 88
+
+---
+
+<div>
+  <iframe src="http://www.slideshare.net/slideshow/embed_code/22423382?rel=0&startSlide=85" width="512" height="421" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen webkitallowfullscreen mozallowfullscreen>
+  </iframe>
+  <div style="margin-bottom:5px">
+    <strong> <a href="http://www.slideshare.net/brikis98/the-play-framework-at-linkedin" title="The Play Framework at LinkedIn" target="_blank">The Play Framework at LinkedIn</a></strong> from <strong><a href="http://www.slideshare.net/brikis98" target="_blank">Yevgeniy Brikman</a></strong>
+  </div>
+</div>
+
+----
+
+## The Itch
+
+- NodeJs callback spaghetti
+- Fix this using promises
+- While better, if the code is sufficiently complex, you can still end up with:
+- Promise spaghetti
+
+![Callback Spaghetti](callback-spaghetti.png)
+
+----
+
+### Light Bulb
+
+[Question on S/O](http://stackoverflow.com/questions/17342401/q-executing-a-series-of-promises-and-defining-dependencies-between-them-in-a-d "Q - executing a series of promises and defining dependencies between them in a DAG")
+![Stackoverflow Question](stackoverflow-qn.png)
 
 ----
 
@@ -27,17 +115,13 @@
 <pre>
   <code>
 [
-  {"id":"q1","depends":[],"api":"add","qry":{"a":1,"b":9}},
-  {"id":"q2","depends":[],"api":"add","qry":{"a":99,"b":1}},
-  {"id":"q3","depends":["q2","q1"],"api":"multiply","qry":{"a":"#{q1}","b":"#{q2}"}},
-  {"id":"q4","depends":["q3"],"api":"multiply","qry":{"a":"#{q3}","b":5}}
+  {id: "q1", api: "add", qry:{a:1, b:9}},
+  {id: "q2", api: "add qry:{a:99, b:1}},
+  {id: "q3", api: "multiply", qry:{a: "#{q1}", b: "#{q2}"}},
+  {id: "q4", api: "multiply", qry:{a: "#{q3}", b:5}}
 ]
   </code>
 </pre>
-
-Can you guess what the result for `q4` is?
-
----
 
 <pre>
   <code>
@@ -48,11 +132,19 @@ Can you guess what the result for `q4` is?
   </code>
 </pre>
 
-Note that `q1` and `q2` may execute in any order, `q3` may only execute when both of them finish, and `q4` executes last.
+- `q1` and `q2` may execute in any order,
+- `q3` may only execute after *both* `q1` and `q2`,
+- and `q4` executes last.
+- Wiring is done automatically by `qryq`
 
-This is all taken care of by qryq, so long as you define the `depends` for each line appropriately.
+---
 
-What about `async`?
+### What about async?
+
+- Dev productivity in accomplishing the same thing:
+  - Sequential: ~Same
+  - Parallel: ~Same
+  - Dependent: A lot easier
 
 ----
 
@@ -92,12 +184,21 @@ From [`walkre`](https://github.com/bguiz/walkre "walkre")
 
 ### Benefits - Dev Productivity
 
-- Less need to write dedicated APIs
-  - Unix philosophy
-- readable && composable
-  - declarative query from client
-  - rather than imperative impl. on server
-  - avoids callback spaghetti && promise spaghetti
+<blockquote>
+This is the Unix philosophy: Write programs that do one thing and do it well. Write programs to work together.
+</blockquote>
+
+-- Doug McIlroy, invented pipes in the UNIX command line
+
+---
+
+### Benefits - Dev Productivity
+
+- Less need to write dedicated API endpoints
+  - instead write small API endpoints, and chain them together
+  - readable && composable
+  - declarative query rather than imperative
+  - avoid callback spaghetti && promise spaghetti
 
 ---
 
@@ -113,7 +214,7 @@ From [`walkre`](https://github.com/bguiz/walkre "walkre")
 
 ### Benefits - 'Net Traffic
 
-- Concatenation
+- Concatenation of
   - Multiple requests
   - Multiple responses
 - [Protocol overhead](http://sd.wareonearth.com/~phil/net/overhead/) minimised
@@ -137,145 +238,45 @@ From [`walkre`](https://github.com/bguiz/walkre "walkre")
 
 ### Limitations - Testing
 
-- Testing is made harder because clients may compose APIs in novel ways
-- Forces one to write more resilient/ robust code
+- Harder because clients may compose API calls in novel ways
+- Need to write more robust code
 
 ---
 
 ### Limitations - Expressions
 
-- Expressions are limited
-- One `qry` references the result of another `qry` in the same `qryq`
-- Can only "drill down" through properties
-
+<blockquote>
 `#{previousQry}.flights.length`
+</blockquote>
+
+- A `qry` references results of another `qry` in the same `qryq`
+- Limited: Can only "drill down" through properties
 
 ----
 
-## Implementation
-
-Frameworks
-- [node.js](http://nodejs.org)
-- [express.js](expressjs.com)
-
-Dependencies
-- [Q](https://github.com/kriskowal/q)
-- [underscore.js](http://underscorejs.org)
-
-----
-
-## Inspiration
-
-- Neil Jenkin's talk Tips, Tricks and Hacks in the Pursuit of Speed
-  - [REST is slow](http://nmjenkins.com/presentations/network-speed.html#/14)
-  - [Concatenate requests](http://nmjenkins.com/presentations/network-speed.html#/15)
-  - [Concatenate responses](http://nmjenkins.com/presentations/network-speed.html#/16)
-
----
-
-<pre>
-	<code class="js">
-POST /api/
-
-[
-    [ 'deleteMessages', {
-        idList: [ 'msg1' ]
-    }],
-    [ 'getMailboxMessageList', {
-        mailboxName: 'Inbox',
-        position: 0,
-        limit: 30,
-        sort: 'date descending'
-    }]
-]
-	</code>
-</pre>
-
----
-
-## Inspiration
-
-- [Play framework](http://playframework.com)'s
-  - [Linkedin talk by Yevgeniy Brikman](http://www.slideshare.net/brikis98/the-play-framework-at-linkedin)
-  - See slides 85 through 88
-
----
-
-<div>
-	<iframe src="http://www.slideshare.net/slideshow/embed_code/22423382?rel=0&startSlide=85" width="512" height="421" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen webkitallowfullscreen mozallowfullscreen>
-	</iframe>
-	<div style="margin-bottom:5px">
-		<strong> <a href="http://www.slideshare.net/brikis98/the-play-framework-at-linkedin" title="The Play Framework at LinkedIn" target="_blank">The Play Framework at LinkedIn</a></strong> from <strong><a href="http://www.slideshare.net/brikis98" target="_blank">Yevgeniy Brikman</a></strong>
-	</div>
-</div>
-
-----
-
-## The Itch
-
-- NodeJs callback spaghetti
-- Fix this using promises
-- While better, if the code is sufficiently complex, you can still end up with:
+Avoiding spaghetti
+- Callback spaghetti
 - Promise spaghetti
 
-----
-
-### Light Bulb
-
-I would like to process a series of data, where the output of each may be used as inputs into the others.
-
-For example:
-
-<pre>
-  <code class="js">
-var batch = [
-  {"id":"a1","depends":[],"data":{"some":"data a1"}},
-  {"id":"b1","depends":["a1"],"data":{"some":"data b1"}},
-  {"id":"b2","depends":["a1"],"data":{"some":"data b2"}},
-  {"id":"c1","depends":["b1","b2"],"data":{"some":"data c1"}},
-  {"id":"x1","depends":[],"data":{"some":"data x1"}},
-];
-  </code>
-</pre>
-
-This means that once `a1` is complete, its output will be sent to both `b1` and `b2`;
-and when these complete, both of their output will be sent to `c1` (only upon both of their completion.
-`x1` may execute in parallel with all of `a1`, `b1`, `b2`, and `c1`;
-and `b1` may execute in parallel with `b2`, as no `depends` between them are defined.
-
 ---
 
-### Light Bulb
+- Request made by the client
+- Before - 3 separate queries:
 
-Upon completion of `c1` and `x1`, and therefore the completion of all 5 of them, the output of all five should be returned.
+```
+to gmapsGeoLookup:
+{"address":"36 Meadow Wood Walk, Narre Warren VIC 3805"}
+{"address":"19 Bourke Street, Melbourne, VIC 3000"}
+```
 
-We will assume that no circular dependencies are defined, and thus is a directed acyclic graph (DAG)
-
-I would like to know how to implement this using [Q](https://github.com/kriskowal/q/wiki/API-Reference), because:
-
-- All the processing of the data will be asynchronous, and thus I will need to use either callbacks, or deferreds and promises;
-and I prefer the latter
-- Promises can double up as a convenient way to define the edges in the graph
-
-----
-
-- `Q` spaghetti
-- Code demonstrating how *not* to use promises
-- Code demonstrating how to do the same thing, using query queues
-
----
-
-- Using qryq, the request made by the client is bigger
-
-Before:
-
-```javascript
+```
+to score:
 {
-  "origin":{"address":"36 Meadow Wood Walk, Narre Warren VIC 3805"},
+  "origin":{"address":"36 Meadow Wood Walk, Narre Warren VIC 3805","lat":"123.999","lon":"456.999"},
   "journeyPlanner":"melbtrans",
   "destinations":[
     {
-      "fixed":true,"class":"work","weight":0.8,"location":{"address":"19 Bourke Street, Melbourne, VIC 3000"},
+      "fixed":true,"class":"work","weight":0.8,"location":{"address":"19 Bourke Street, Melbourne, VIC 3000","lat":"789.111","lon":"123.111"},
       "modes":[{"form":"transit","max":{"time":2400}}]
     }
   ]
@@ -284,11 +285,10 @@ Before:
 
 ---
 
-- Using qryq, the request made by the client is bigger
+- Request made by the client
+- After - a single query:
 
-After:
-
-```javascript
+```
 [
   {"id":"qGeocodeOrigin","depends":[],"api":"gmapsGeoLookup","qry":{"address":"36 Meadow Wood Walk, Narre Warren VIC 3805"}},
   {"id":"qGeocodeDestination","depends":[],"api":"gmapsGeoLookup","qry":{"address":"19 Bourke Street, Melbourne, VIC 3000"}},
@@ -317,17 +317,11 @@ After:
 ---
 
 - Server `score` API before:
+- Demonstrates how *not* to use promises
 
 ```javascript
 exports.score = function(deferred, qry) {
-  var validateErrs = validateScore(qry);
-  if (validateErrs.length > 0) {
-    deferred.reject({
-      msg: 'Score could not be computed',
-      errors: validateErrs
-    });
-    return;
-  }
+  /* validate qry */
   qry.journeyPlanner = qry.journeyPlanner || 'gmaps';
   var needGeo =
     (qry.journeyPlanner === 'melbtrans')
@@ -439,17 +433,12 @@ exports.score = function(deferred, qry) {
 ---
 
 - Server `score` API after:
+- Demonstrates how to do the same thing, using query queues
+- ~Half the numebr of lines of code required
 
 ```javascript
 exports.score = function(deferred, qry) {
-  var validateErrs = validateScore(qry);
-  if (!validateErrs || validateErrs.length > 0) {
-    deferred.reject({
-      msg: 'Score could not be computed',
-      errors: validateErrs
-    });
-    return;
-  }
+  /* validate qry */
   qry.journeyPlanner = qry.journeyPlanner || 'gmaps';
 
   var scorePromises = [];
@@ -508,7 +497,83 @@ exports.score = function(deferred, qry) {
 
 ----
 
+## Horizon
+
+- [x] Rewrite the `Q` spaghetti in [walkre](https://github.com/bguiz/walkre)
+  - Demonstrate how declaratively defining dependent queries can make code more comprehensible
+- [x] Feature to reference results of dependent queries *inline* in query data
+  - Kinda [like this](http://nmjenkins.com/presentations/network-speed.html#/17)
+- [ ] Separate [qryq](https://github.com/bguiz/qryq) into its own library
+  - Presently exists only within [walkre](https://github.com/bguiz/walkre)
+- [ ] Write unit tests
+- [ ] Infer `depends` if not provided using two passes parsing `qry`
+- [x] Pick a licence for this library
+- [ ] Benchmarking for performance
+
+---
+
+### Farther Horizon
+
+- [ ] Cyclic graph detection in dependent query queue validation
+- [ ] Aloow client to create promises and pass in to `qryq`
+- [ ] Load testing/ stress testing
+  - Start including high latency ops, e.g. disk I/O
+- [ ] Create a front end for this server
+  - For full stack load testing/ stress testing
+- [ ] Create a NodeJs/ ExpressJs server wrapper for `qryq`
+- [ ] Allow configurable parallelism
+
+----
+
+## Fin
+
+- Recommendations for load testing a nodejs server?
+- What other libraries are there out that that perform this function? In other languages?
+- Submit some patches!
+
+----
+
+## Thank you
+
+[bguiz.com](http://bguiz.com)
+
+[@bguiz](http://twitter.com/bguiz)
+
+[bit.ly/qryq](http://bguiz.com/post/54620002947/qryq "qryq intro")
+
+[github.com/bguiz/qryq](https://github.com/bguiz/qryq "qryq source")
+
+[/doco/present/markdown/present.md](https://github.com/bguiz/qryq/blob/master/doco/present/markdown/present.md "this presentation")
+
+[github.com/bguiz/walkre](https://github.com/bguiz/walkre "walkre source")
+
+----
+
 ## The Code
+
+----
+
+## What is the `api` object?
+
+- a JS object that gets passed into `qryq`
+- each query in the queue names an `api`
+- matches a function with the same name in the `api` object
+- each function takes in a `deferred` and a `qry`
+  - `qry`: input params
+  - `deferred`: promise object, must call `reject` or `resolve`
+
+```javascript
+exports.api = {
+  multiply: function(deferred, qry) {
+    if (!qry || ! _.isNumber(qry.a) || ! _.isNumber(qry.b)) {
+      deferred.reject('Must specify two params, a and b');
+    }
+    else {
+      deferred.resolve(qry.a + qry.b);
+    }
+  }
+}
+```
 
 ----
 
@@ -517,7 +582,7 @@ exports.score = function(deferred, qry) {
 [github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
-	<code class="js">
+  <code class="js">
 var numApiCalls = qry.length;
 var apiPromises = [];
 _.each(qry, function(line) {
@@ -530,7 +595,7 @@ if (!apiFunc) {
 }
 apiPromises.push(async(apiFunc, apiQry));
 });
-	</code>
+  </code>
 </pre>
 
 ---
@@ -540,7 +605,7 @@ apiPromises.push(async(apiFunc, apiQry));
 [github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
-	<code class="js">
+  <code class="js">
 Q.allSettled(apiPromises).then(function(apiResults) {
 var out = [];
 _.each(apiResults, function(apiResult, idx) {
@@ -552,7 +617,7 @@ _.each(apiResults, function(apiResult, idx) {
 });
 deferred.resolve(out);
 });
-	</code>
+  </code>
 </pre>
 
 ----
@@ -562,7 +627,7 @@ deferred.resolve(out);
 [github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
-	<code class="js">
+  <code class="js">
 var numApiCalls = qry.length;
 var out = [];
 function sequentialLine(idx) {
@@ -580,7 +645,7 @@ promise.then(
 );
 }
 sequentialLine(0);
-	</code>
+  </code>
 </pre>
 
 ---
@@ -617,7 +682,7 @@ promise.then(
 [github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
-	<code class="js">
+  <code class="js">
 var linePromisesHash = {};
 var linePromises = [];
 _.each(qry, function(line) {
@@ -632,7 +697,7 @@ var linePromise = dependentLine(line, apiFunc, linePromisesHash);
 linePromises.push(linePromise);
 linePromisesHash[line.id] = linePromise;
 });
-	</code>
+  </code>
 </pre>
 
 ---
@@ -642,7 +707,7 @@ linePromisesHash[line.id] = linePromise;
 [github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
-	<code class="js">
+  <code class="js">
 var dependentLine = function(line, apiFunc, linePromisesHash) {
   var lineDeferred = Q.defer();
   var dependsPromises = [];
@@ -656,7 +721,7 @@ var dependentLine = function(line, apiFunc, linePromisesHash) {
   });
   return lineDeferred.promise;
 };
-	</code>
+  </code>
 </pre>
 
 ---
@@ -666,7 +731,7 @@ var dependentLine = function(line, apiFunc, linePromisesHash) {
 [github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
-	<code class="js">
+  <code class="js">
 Q.allSettled(dependsPromises).then(function(dependsResults) {
 var dependsResultsHash = {};
 _.each(dependsResults, function(depResult, idx) {
@@ -686,7 +751,7 @@ _.extend(
 );
 apiFunc(lineDeferred, lineQryWithDepends);
 });
-	</code>
+  </code>
 </pre>
 
 ---
@@ -696,7 +761,7 @@ apiFunc(lineDeferred, lineQryWithDepends);
 [github.com/bguiz/qryq](http://github.com/bguiz/qryq)
 
 <pre>
-	<code class="js">
+  <code class="js">
 Q.allSettled(linePromises).then(function(lineResults) {
 var out = [];
 _.each(lineResults, function(lineResult, idx) {
@@ -708,82 +773,8 @@ _.each(lineResults, function(lineResult, idx) {
 });
 deferred.resolve(out);
 });
-	</code>
+  </code>
 </pre>
 
 ----
 
-## Horizon
-
-- [x] Rewrite the `Q` spaghetti in [walkre](https://github.com/bguiz/walkre)
-	- Demonstrate how declaratively defining dependent queries can make code more comprehensible
-- [x] Feature to reference results of dependent queries *inline* in query data
-	- Kinda [like this](http://nmjenkins.com/presentations/network-speed.html#/17)
-- [ ] Separate [qryq](https://github.com/bguiz/qryq) into its own library
-  - Presently exists only within [walkre](https://github.com/bguiz/walkre)
-- [ ] Write unit tests
-- [ ] Pick a licence for this library
-- [ ] Benchmarking for performance
-
----
-
-<pre>
-	<code class="js">
-[
-    [ 'setMailboxes', {
-        create: {
-            '123': {
-                name: 'Important'
-            }
-        }
-    }],
-    [ 'setPopLinks', {
-        create: {
-            '124': {
-                server: 'pop.live.com',
-                port: 110,
-                username: 'testuser@live.com'
-                password: 'letmein'
-                folder: '#123'
-            }
-        }
-    }]
-]
-	</code>
-</pre>
-
----
-
-### Farther Horizon
-
-- [ ] Cyclic graph detection in dependent query queue validation
-- [ ] Load testing/ stress testing
-  - Start including high latency ops, e.g. disk I/O
-- [ ] Create a front end for this server
-  - For full stack end to end load testing/ stress testing
-- [ ] Create a NodeJs/ ExpressJs server wrapper for `qryq`
-- [ ] Allow configurable parallelism
-
-----
-
-## Fin
-
-- Recommendations for load testing a nodejs server?
-- What other libraries are there out that that perform this function? In other languages?
-- Submit some patches!
-
-----
-
-## Thank you
-
-[bguiz.com](http://bguiz.com)
-
-[@bguiz](http://twitter.com/bguiz)
-
-[bit.ly/qryq](http://bguiz.com/post/54620002947/qryq "qryq intro")
-
-[github.com/bguiz/qryq](https://github.com/bguiz/qryq "qryq source")
-
-[/doco/present/markdown/present.md](https://github.com/bguiz/qryq/blob/master/doco/present/markdown/present.md "this presentation")
-
-[github.com/bguiz/walkre](https://github.com/bguiz/walkre "walkre source")
