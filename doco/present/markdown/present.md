@@ -1,9 +1,3 @@
-emphasise dev productivity
-draw diagram for directed acyclic graph
-draw diagram for callback and promise spaghetti
-show promises in play
-rearrange to bring forth itch and lightbulb first
-
 # qryq
 
 ## stop RESTing, start using query queues
@@ -132,8 +126,6 @@ I would like to know how to implement this using [Q](https://github.com/kriskowa
 - All the processing of the data will be asynchronous, and thus I will need to use either callbacks, or deferreds and promises;
 and I prefer the latter
 - Promises can double up as a convenient way to define the edges in the graph
-
-----
 
 ----
 
@@ -272,12 +264,12 @@ This is the Unix philosophy: Write programs that do one thing and do it well. Wr
 
 ### Limitations - Expressions
 
-- A `qry` references results of another `qry` in the same `qryq`
-- Limited: Can only "drill down" through properties
-
 <blockquote>
 `#{previousQry}.flights.length`
 </blockquote>
+
+- A `qry` references results of another `qry` in the same `qryq`
+- Limited: Can only "drill down" through properties
 
 ----
 
@@ -348,14 +340,7 @@ to score:
 
 ```javascript
 exports.score = function(deferred, qry) {
-  var validateErrs = validateScore(qry);
-  if (validateErrs.length > 0) {
-    deferred.reject({
-      msg: 'Score could not be computed',
-      errors: validateErrs
-    });
-    return;
-  }
+  /* validate qry */
   qry.journeyPlanner = qry.journeyPlanner || 'gmaps';
   var needGeo =
     (qry.journeyPlanner === 'melbtrans')
@@ -472,14 +457,7 @@ exports.score = function(deferred, qry) {
 
 ```javascript
 exports.score = function(deferred, qry) {
-  var validateErrs = validateScore(qry);
-  if (!validateErrs || validateErrs.length > 0) {
-    deferred.reject({
-      msg: 'Score could not be computed',
-      errors: validateErrs
-    });
-    return;
-  }
+  /* validate qry */
   qry.journeyPlanner = qry.journeyPlanner || 'gmaps';
 
   var scorePromises = [];
@@ -547,7 +525,8 @@ exports.score = function(deferred, qry) {
 - [ ] Separate [qryq](https://github.com/bguiz/qryq) into its own library
   - Presently exists only within [walkre](https://github.com/bguiz/walkre)
 - [ ] Write unit tests
-- [ ] Pick a licence for this library
+- [ ] Infer `depends` if not provided using two passes parsing `qry`
+- [x] Pick a licence for this library
 - [ ] Benchmarking for performance
 
 ---
@@ -555,10 +534,11 @@ exports.score = function(deferred, qry) {
 ### Farther Horizon
 
 - [ ] Cyclic graph detection in dependent query queue validation
+- [ ] Aloow client to create promises and pass in to `qryq`
 - [ ] Load testing/ stress testing
   - Start including high latency ops, e.g. disk I/O
 - [ ] Create a front end for this server
-  - For full stack end to end load testing/ stress testing
+  - For full stack load testing/ stress testing
 - [ ] Create a NodeJs/ ExpressJs server wrapper for `qryq`
 - [ ] Allow configurable parallelism
 
@@ -589,6 +569,30 @@ exports.score = function(deferred, qry) {
 ----
 
 ## The Code
+
+----
+
+## What is the `api` object?
+
+- a JS object that gets passed into `qryq`
+- each query in the queue names an `api`
+- matches a function with the same name in the `api` object
+- each function takes in a `deferred` and a `qry`
+  - `qry`: input params
+  - `deferred`: promise object, must call `reject` or `resolve`
+
+```javascript
+exports.api = {
+  multiply: function(deferred, qry) {
+    if (!qry || ! _.isNumber(qry.a) || ! _.isNumber(qry.b)) {
+      deferred.reject('Must specify two params, a and b');
+    }
+    else {
+      deferred.resolve(qry.a + qry.b);
+    }
+  }
+}
+```
 
 ----
 
@@ -790,3 +794,12 @@ deferred.resolve(out);
 });
   </code>
 </pre>
+
+----
+
+draw diagram for directed acyclic graph
+draw diagram for callback and promise spaghetti
+show promises in play
+talk more about the api object
+S/O question as a picture
+
