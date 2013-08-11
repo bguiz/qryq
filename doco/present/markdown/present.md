@@ -99,6 +99,8 @@ POST /api/
 - While better, if the code is sufficiently complex, you can still end up with:
 - Promise spaghetti
 
+![Callback Spaghetti](callback-spaghetti.png)
+
 ----
 
 ### Light Bulb
@@ -775,7 +777,4 @@ deferred.resolve(out);
 </pre>
 
 ----
-
-draw diagram for callback and promise spaghetti
-show promises in play
 
