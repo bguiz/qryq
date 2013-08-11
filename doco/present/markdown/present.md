@@ -20,6 +20,17 @@
 
 `qryq` is a NodeJs library that allows one to express a series of queries and define dependencies between them either in parallel, in sequence, or in a directed acyclic graph.
 
+![Directed Acyclic Graph](http://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Directed_acyclic_graph_3.svg/356px-Directed_acyclic_graph_3.svg.png)
+
+---
+
+<blockquote>
+A directed graph with no directed cycles.<br />
+That is, it is formed by a collection of vertices and directed edges, each edge connecting one vertex to another, such that there is no way to start at some vertex v and follow a sequence of edges that eventually loops back to v again
+</blockquote>
+
+-- [Directed acyclic graph](http://en.wikipedia.org/wiki/Directed_acyclic_graph)
+
 ----
 
 ## Implementation
@@ -765,7 +776,6 @@ deferred.resolve(out);
 
 ----
 
-draw diagram for directed acyclic graph
 draw diagram for callback and promise spaghetti
 show promises in play
 
