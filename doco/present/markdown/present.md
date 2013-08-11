@@ -92,40 +92,8 @@ POST /api/
 
 ### Light Bulb
 
-I would like to process a series of data, where the output of each may be used as inputs into the others.
-
-For example:
-
-<pre>
-  <code class="js">
-var batch = [
-  {"id":"a1","depends":[],"data":{"some":"data a1"}},
-  {"id":"b1","depends":["a1"],"data":{"some":"data b1"}},
-  {"id":"b2","depends":["a1"],"data":{"some":"data b2"}},
-  {"id":"c1","depends":["b1","b2"],"data":{"some":"data c1"}},
-  {"id":"x1","depends":[],"data":{"some":"data x1"}},
-];
-  </code>
-</pre>
-
-This means that once `a1` is complete, its output will be sent to both `b1` and `b2`;
-and when these complete, both of their output will be sent to `c1` (only upon both of their completion.
-`x1` may execute in parallel with all of `a1`, `b1`, `b2`, and `c1`;
-and `b1` may execute in parallel with `b2`, as no `depends` between them are defined.
-
----
-
-### Light Bulb
-
-Upon completion of `c1` and `x1`, and therefore the completion of all 5 of them, the output of all five should be returned.
-
-We will assume that no circular dependencies are defined, and thus is a directed acyclic graph (DAG)
-
-I would like to know how to implement this using [Q](https://github.com/kriskowal/q/wiki/API-Reference), because:
-
-- All the processing of the data will be asynchronous, and thus I will need to use either callbacks, or deferreds and promises;
-and I prefer the latter
-- Promises can double up as a convenient way to define the edges in the graph
+[Question on S/O](http://stackoverflow.com/questions/17342401/q-executing-a-series-of-promises-and-defining-dependencies-between-them-in-a-d "Q - executing a series of promises and defining dependencies between them in a DAG")
+![Stackoverflow Question](stackoverflow-qn.png)
 
 ----
 
@@ -800,6 +768,4 @@ deferred.resolve(out);
 draw diagram for directed acyclic graph
 draw diagram for callback and promise spaghetti
 show promises in play
-talk more about the api object
-S/O question as a picture
 
