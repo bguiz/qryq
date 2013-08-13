@@ -99,14 +99,14 @@ POST /api/
 - While better, if the code is sufficiently complex, you can still end up with:
 - Promise spaghetti
 
-![Callback Spaghetti](callback-spaghetti.png)
+![Callback Spaghetti](image/callback-spaghetti.png)
 
 ----
 
 ### Light Bulb
 
 [Question on S/O](http://stackoverflow.com/questions/17342401/q-executing-a-series-of-promises-and-defining-dependencies-between-them-in-a-d "Q - executing a series of promises and defining dependencies between them in a DAG")
-![Stackoverflow Question](stackoverflow-qn.png)
+![Stackoverflow Question](image/stackoverflow-qn.png)
 
 ----
 
@@ -254,7 +254,8 @@ This is the Unix philosophy: Write programs that do one thing and do it well. Wr
 
 ----
 
-Avoiding spaghetti
+Avoiding
+
 - Callback spaghetti
 - Promise spaghetti
 
@@ -506,7 +507,7 @@ exports.score = function(deferred, qry) {
 - [ ] Separate [qryq](https://github.com/bguiz/qryq) into its own library
   - Presently exists only within [walkre](https://github.com/bguiz/walkre)
 - [ ] Write unit tests
-- [ ] Infer `depends` if not provided using two passes parsing `qry`
+- [ ] Infer `depends` if not provided using two-pass parsing `qry`
 - [x] Pick a licence for this library
 - [ ] Benchmarking for performance
 
@@ -515,7 +516,7 @@ exports.score = function(deferred, qry) {
 ### Farther Horizon
 
 - [ ] Cyclic graph detection in dependent query queue validation
-- [ ] Aloow client to create promises and pass in to `qryq`
+- [ ] Allow client to create promises and pass in to `qryq`
 - [ ] Load testing/ stress testing
   - Start including high latency ops, e.g. disk I/O
 - [ ] Create a front end for this server
