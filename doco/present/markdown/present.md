@@ -116,7 +116,7 @@ POST /api/
   <code>
 [
   {id: "q1", api: "add", qry:{a:1, b:9}},
-  {id: "q2", api: "add qry:{a:99, b:1}},
+  {id: "q2", api: "add", qry:{a:99, b:1}},
   {id: "q3", api: "multiply", qry:{a: "#{q1}", b: "#{q2}"}},
   {id: "q4", api: "multiply", qry:{a: "#{q3}", b:5}}
 ]
@@ -188,7 +188,7 @@ From [`walkre`](https://github.com/bguiz/walkre "walkre")
 This is the Unix philosophy: Write programs that do one thing and do it well. Write programs to work together.
 </blockquote>
 
--- Doug McIlroy, invented pipes in the UNIX command line
+-- Doug McIlroy, invented pipes in UNIX
 
 ---
 
@@ -434,7 +434,7 @@ exports.score = function(deferred, qry) {
 
 - Server `score` API after:
 - Demonstrates how to do the same thing, using query queues
-- ~Half the numebr of lines of code required
+- ~Half the number of lines of code required
 
 ```javascript
 exports.score = function(deferred, qry) {
@@ -503,10 +503,10 @@ exports.score = function(deferred, qry) {
   - Demonstrate how declaratively defining dependent queries can make code more comprehensible
 - [x] Feature to reference results of dependent queries *inline* in query data
   - Kinda [like this](http://nmjenkins.com/presentations/network-speed.html#/17)
-- [ ] Separate [qryq](https://github.com/bguiz/qryq) into its own library
+- [x] Separate [qryq](https://github.com/bguiz/qryq) into its own library
   - Presently exists only within [walkre](https://github.com/bguiz/walkre)
-- [ ] Write unit tests
-- [ ] Infer `depends` if not provided using two passes parsing `qry`
+- [x] Unit tests
+- [ ] Infer `depends` if not provided using two-pass parsing `qry`
 - [x] Pick a licence for this library
 - [ ] Benchmarking for performance
 
@@ -521,13 +521,12 @@ exports.score = function(deferred, qry) {
 - [ ] Create a front end for this server
   - For full stack load testing/ stress testing
 - [ ] Create a NodeJs/ ExpressJs server wrapper for `qryq`
-- [ ] Allow configurable parallelism
 
 ----
 
 ## Fin
 
-- Recommendations for load testing a nodejs server?
+- Recommendations for load testing a NodeJs server?
 - What other libraries are there out that that perform this function? In other languages?
 - Submit some patches!
 
@@ -535,9 +534,9 @@ exports.score = function(deferred, qry) {
 
 ## Thank you
 
-[bguiz.com](http://bguiz.com)
+[bguiz.com](http://bguiz.com "my blog")
 
-[@bguiz](http://twitter.com/bguiz)
+[@bguiz](http://twitter.com/bguiz "my twitter")
 
 [bit.ly/qryq](http://bguiz.com/post/54620002947/qryq "qryq intro")
 
@@ -569,11 +568,54 @@ exports.api = {
       deferred.reject('Must specify two params, a and b');
     }
     else {
-      deferred.resolve(qry.a + qry.b);
+      deferred.resolve(qry.a * qry.b);
     }
   }
 }
 ```
+
+----
+
+## Test
+
+var aQueryQueue = [
+  {id: "q1", depends:[], api: "add", qry:{a:1, b:9}},
+  {id: "q2", depends:[], api: "add", qry:{a:99, b:1}},
+  {id: "q3", depends:['q1', 'q2'], api: "multiply", qry:{a: "#{q1}", b: "#{q2}"}},
+  {id: "q4", depends:['q3'], api: "multiply", qry:{a: "#{q3}", b:5}}
+];
+var expectedResults = [
+    { id: 'q1', value: 10 }, 
+    { id: 'q2', value: 100 }, 
+    { id: 'q3', value: 1000 }, 
+    { id: 'q4', value: 5000 }
+];
+
+---
+
+var deferred = Q.defer();
+qryq.dependent(deferred, aQueryQueue, api);
+deferred.promise.then(function(result) {
+    test.ok(true, 'qryq resolved');
+    console.log(JSON.stringify(result));
+    test.ok(_.isArray(result), 'Returned and array');
+    test.equals(result.length, 4, 'Returned 4 results');
+
+    _.each(result, function(qryResult, idx) {
+        test.ok(! _.isUndefined(qryResult.id));
+        var response = qryResult.response;
+        test.ok(_.isObject(response), 'Qry id='+qryResult.id+' has a response object');
+        test.equal(qryResult.id, expectedResults[idx].id, 'Qry id='+qryResult.id+' has expected id');
+        if (!! response) {
+            test.equals(response.state, 'fulfilled', 'Qry id='+qryResult.id+' has expected state');
+            test.equals(response.value, expectedResults[idx].value, 'Qry id='+qryResult.id+' has expected result');
+        }
+    }, this);
+    test.done();
+}, function(reason) {
+    test.ok(false, 'qryq rejected, reason:'+JSON.stringify(reason));
+    test.done();
+});
 
 ----
 
