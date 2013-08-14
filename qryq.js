@@ -75,18 +75,33 @@ var dependentLineResults = function(obj, dependsResults) {
       if (_.isString(child)) {
         var found = child.match(dependentSubstituteRe);
         if (found && found.length > 1) {
+          // DEBUG
+          // console.log('dependentLineResults: '+JSON.stringify({
+          //   child: child,
+          //   found: found
+          // }));
+
           var key = found[1]; //first regex match is always the entire string
           if (key && key.length > 0) {
             var dependResult = dependsResults[key];
             if (!dependResult && key === 'previous') {
               dependResult = dependsResults[dependsResults.length];
             }
-            var subKeys = [];
-            if (found.length > 1) {
+            var subKeys;
+            if (found.length > 1 && found[2].length > 0) {
               var subKey = found[2];
               subKeys = subKey.split('.');
             }
+            else {
+              subKeys = [];
+            }
             var numSubKeys = subKeys.length;
+            // DEBUG
+            // console.log('dependentLineResults: '+JSON.stringify({
+            //   key: key,
+            //   subKeys: subKeys
+            // }));
+
             if (numSubKeys < 1) {
               if (dependResult && dependResult.value) {
                 obj[idx] = dependResult.value;

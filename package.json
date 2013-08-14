@@ -4,7 +4,6 @@
   "author": "Brendan Graetz <redacted@my.email> (http://bguiz.com)",
   "config": {
     "defaults": {
-      }
     },
     "limits": {
     }
@@ -18,7 +17,8 @@
   "dependencies": {
     "express": "~3.2.6",
     "q": "~0.9.6",
-    "underscore":"~1.4.4"
+    "underscore":"~1.4.4",
+    "nodeunit":"~0.8.1"
   },
   "scripts": {
   },
