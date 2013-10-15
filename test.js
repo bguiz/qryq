@@ -166,6 +166,84 @@ exports.qryqApi = {
                 { id: 'y', value: 30 }
             ];
             testAQueryQueue(test, api, aQueryQueue, expectedResults);
+        },
+        basicInferDepends: function(test) {
+            var aQueryQueue = [
+              {id: "q1", api: "add", qry:{a:1, b:9}},
+              {id: "q2", api: "add", qry:{a:99, b:1}},
+              {id: "q3", api: "multiply", qry:{a: "#{q1}", b: "#{q2}"}},
+              {id: "q4", api: "multiply", qry:{a: "#{q3}", b:5}}
+            ];
+            var expectedResults = [
+                { id: 'q1', value: 10 },
+                { id: 'q2', value: 100 },
+                { id: 'q3', value: 1000 },
+                { id: 'q4', value: 5000 }
+            ];
+            testAQueryQueue(test, api, aQueryQueue, expectedResults);
+        },
+        diamondInferDepends: function(test) {
+            var aQueryQueue = [
+              {id: "A", api: "add", qry:{a:3, b:4}},
+              {id: "B", api: "multiply", qry:{a:"#{A}", b:3}},
+              {id: "C", api: "multiply", qry:{a:7, b: "#{A}"}},
+              {id: "D", api: "add", qry:{a:"#{C}", b:"#{B}"}}
+            ];
+            var expectedResults = [
+                { id: 'A', value: 7 },
+                { id: 'B', value: 21 },
+                { id: 'C', value: 49 },
+                { id: 'D', value: 70 }
+            ];
+            testAQueryQueue(test, api, aQueryQueue, expectedResults);
+        },
+        expressionDrilldownInferDepends: function(test) {
+            var aQueryQueue = [
+              {id: "x", api: "sampleObject", qry:{}},
+              {id: "y", api: "multiply", qry:{a:"#{x}.foo.bar", b:"#{x}.foo.baz"}}
+            ];
+            var expectedResults = [
+                { id: 'x', value: {
+                        hello: 'world',
+                        foo: {
+                            bar: 5,
+                            baz: 6
+                        }
+                    } },
+                { id: 'y', value: 30 }
+            ];
+            testAQueryQueue(test, api, aQueryQueue, expectedResults);
+        }
+    },
+    testApi: {
+        inferDepends: function(test) {
+            var line = {
+                qry: "abc#{ksadhf}sdsd#{jfjf}sdjhnfj"
+            };
+            qryq._internal.inferDepends(line);
+            test.ok(_.isArray(line.depends));
+            test.equal(line.depends.length, 2);
+            test.same(line.depends, ["ksadhf", "jfjf"]);
+
+            var line2 = {id: "q3", api: "multiply", qry:{a: "#{q1}", b: "#{q2.xyz.123}"}};
+            qryq._internal.inferDepends(line2);
+            test.ok(_.isArray(line2.depends));
+            test.equal(line2.depends.length, 2);
+            test.same(line2.depends, ["q1", "q2"]);
+
+            var line3 = {id: "q3", api: "multiply", qry:{a: 1, b: 2}};
+            qryq._internal.inferDepends(line3);
+            test.ok(_.isArray(line3.depends));
+            test.equal(line3.depends.length, 0);
+            test.same(line3.depends, []);
+
+            var line4 = {id: "q4", api: "multiply", qry:{a: "#{q3}", b:5}};
+            qryq._internal.inferDepends(line4);
+            test.ok(_.isArray(line4.depends));
+            test.equal(line4.depends.length, 1);
+            test.same(line4.depends, ["q3"]);
+
+            test.done();
         }
     }
 };

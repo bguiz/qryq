@@ -7,7 +7,32 @@ var async = function(fn, qry) {
   return deferred.promise;
 };
 
+//TODO make this a non-greedy regex
+var dependentSubstituteRe = /^#{(.*)}(.*)$/ ;
+// var dependentSubstituteRe = /^#\{[^\{\}]\}(.*)$/ ;
+// var dependentSubstituteRe = /^#{[^{}]}(.*)$/ ;
+var dependentInferRe = /#\{[^\{\}]*\}/g ;
+
+var inferDepends = function(line) {
+  line.depends = [];
+  var len;
+  var qryAsString = JSON.stringify(line.qry);
+  var found = qryAsString.match(dependentInferRe);
+  if (found && found.length > 0) {
+    for (var idx = 0; idx < found.length; ++idx) {
+      var tok = found[idx];
+      var match = tok.match(dependentSubstituteRe);
+      if (match && match.length > 1) {
+        var tmp = match[1];
+        var subKeys = tmp.split('.');
+        line.depends.push(subKeys[0]);
+      }
+    }
+  }
+};
+
 var validateQueue = function(qry, options) {
+  var shouldInferDepends = options && !!(options.inferDepends);
   var needsDepends = options && !!(options.needsDepends);
   var errs = [];
   if (!(qry && _.isArray(qry) && qry.length > 0)) {
@@ -22,7 +47,12 @@ var validateQueue = function(qry, options) {
         if (!(line.id && line.api && line.qry)) {
           errs.push('Line #'+idx+' should have an id, an api, and a qry');
         }
-        if (needsDepends) {
+        if (shouldInferDepends) {
+          if (!(line.depends && _.isArray(line.depends))) {
+            inferDepends(line);
+          }
+        }
+        else if (needsDepends) {
           if (!(line.depends && _.isArray(line.depends))) {
             errs.push('Line #'+idx+' should have an a depends that is an array (may be empty).');
           }
@@ -31,7 +61,7 @@ var validateQueue = function(qry, options) {
     });
   }
   return errs;
-}
+};
 
 exports.parallel = function(deferred, qry, api) {
   var validateErrs = validateQueue(qry);
@@ -67,20 +97,12 @@ exports.parallel = function(deferred, qry, api) {
   });
 };
 
-//TODO make this a non-greedy regex
-var dependentSubstituteRe = /^#{(.*)}(.*)$/ ;
 var dependentLineResults = function(obj, dependsResults) {
   if (_.isArray(obj) || _.isObject(obj)) {
     _.each(obj, function(child, idx) {
       if (_.isString(child)) {
         var found = child.match(dependentSubstituteRe);
         if (found && found.length > 1) {
-          // DEBUG
-          // console.log('dependentLineResults: '+JSON.stringify({
-          //   child: child,
-          //   found: found
-          // }));
-
           var key = found[1]; //first regex match is always the entire string
           if (key && key.length > 0) {
             var dependResult = dependsResults[key];
@@ -96,11 +118,6 @@ var dependentLineResults = function(obj, dependsResults) {
               subKeys = [];
             }
             var numSubKeys = subKeys.length;
-            // DEBUG
-            // console.log('dependentLineResults: '+JSON.stringify({
-            //   key: key,
-            //   subKeys: subKeys
-            // }));
 
             if (numSubKeys < 1) {
               if (dependResult && dependResult.value) {
@@ -221,7 +238,8 @@ var dependentLine = function(line, apiFunc, linePromisesHash) {
 };
 
 exports.dependent = function(deferred, qry, api) {
-  var validateErrs = validateQueue(qry, {needsDepends: true});
+  var validateErrs = validateQueue(qry, {inferDepends: true});
+  // var validateErrs = validateQueue(qry, {needsDepends: true});
   if (validateErrs.length > 0) {
     deferred.reject({
       msg: 'Invalid qryq dependent query',
@@ -254,4 +272,8 @@ exports.dependent = function(deferred, qry, api) {
     });
     deferred.resolve(out);
   });
+};
+
+exports._internal = {
+  inferDepends: inferDepends
 };
