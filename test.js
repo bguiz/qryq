@@ -196,6 +196,23 @@ exports.qryqApi = {
                 { id: 'D', value: 70 }
             ];
             testAQueryQueue(test, api, aQueryQueue, expectedResults);
+        },
+        expressionDrilldownInferDepends: function(test) {
+            var aQueryQueue = [
+              {id: "x", api: "sampleObject", qry:{}},
+              {id: "y", api: "multiply", qry:{a:"#{x}.foo.bar", b:"#{x}.foo.baz"}}
+            ];
+            var expectedResults = [
+                { id: 'x', value: {
+                        hello: 'world',
+                        foo: {
+                            bar: 5,
+                            baz: 6
+                        }
+                    } },
+                { id: 'y', value: 30 }
+            ];
+            testAQueryQueue(test, api, aQueryQueue, expectedResults);
         }
     },
     testApi: {
