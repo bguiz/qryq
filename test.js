@@ -166,6 +166,21 @@ exports.qryqApi = {
                 { id: 'y', value: 30 }
             ];
             testAQueryQueue(test, api, aQueryQueue, expectedResults);
+        },
+        basicInferDepends: function(test) {
+            var aQueryQueue = [
+              {id: "q1", api: "add", qry:{a:1, b:9}},
+              {id: "q2", api: "add", qry:{a:99, b:1}},
+              {id: "q3", api: "multiply", qry:{a: "#{q1}", b: "#{q2}"}},
+              {id: "q4", api: "multiply", qry:{a: "#{q3}", b:5}}
+            ];
+            var expectedResults = [
+                { id: 'q1', value: 10 },
+                { id: 'q2', value: 100 },
+                { id: 'q3', value: 1000 },
+                { id: 'q4', value: 5000 }
+            ];
+            testAQueryQueue(test, api, aQueryQueue, expectedResults);
         }
     },
     testApi: {
