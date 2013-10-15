@@ -181,6 +181,21 @@ exports.qryqApi = {
                 { id: 'q4', value: 5000 }
             ];
             testAQueryQueue(test, api, aQueryQueue, expectedResults);
+        },
+        diamondInferDepends: function(test) {
+            var aQueryQueue = [
+              {id: "A", api: "add", qry:{a:3, b:4}},
+              {id: "B", api: "multiply", qry:{a:"#{A}", b:3}},
+              {id: "C", api: "multiply", qry:{a:7, b: "#{A}"}},
+              {id: "D", api: "add", qry:{a:"#{C}", b:"#{B}"}}
+            ];
+            var expectedResults = [
+                { id: 'A', value: 7 },
+                { id: 'B', value: 21 },
+                { id: 'C', value: 49 },
+                { id: 'D', value: 70 }
+            ];
+            testAQueryQueue(test, api, aQueryQueue, expectedResults);
         }
     },
     testApi: {
