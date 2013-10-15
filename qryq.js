@@ -13,7 +13,7 @@ var dependentSubstituteRe = /^#{(.*)}(.*)$/ ;
 // var dependentSubstituteRe = /^#{[^{}]}(.*)$/ ;
 var dependentInferRe = /#\{[^\{\}]*\}/g ;
 
-exports.inferDepends = function(line) {
+var inferDepends = function(line) {
   line.depends = [];
   var len;
   var qryAsString = JSON.stringify(line.qry);
@@ -47,7 +47,7 @@ var validateQueue = function(qry, options) {
         }
         if (shouldInferDepends) {
           if (!(line.depends && _.isArray(line.depends))) {
-            exports.inferDepends(line);
+            inferDepends(line);
           }
         }
         else if (needsDepends) {
@@ -270,4 +270,8 @@ exports.dependent = function(deferred, qry, api) {
     });
     deferred.resolve(out);
   });
+};
+
+exports._internal = {
+  inferDepends: inferDepends
 };
