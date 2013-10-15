@@ -167,5 +167,36 @@ exports.qryqApi = {
             ];
             testAQueryQueue(test, api, aQueryQueue, expectedResults);
         }
+    },
+    testApi: {
+        inferDepends: function(test) {
+            var line = {
+                qry: "abc#{ksadhf}sdsd#{jfjf}sdjhnfj"
+            };
+            qryq._internal.inferDepends(line);
+            test.ok(_.isArray(line.depends));
+            test.equal(line.depends.length, 2);
+            test.same(line.depends, ["ksadhf", "jfjf"]);
+
+            var line2 = {id: "q3", api: "multiply", qry:{a: "#{q1}", b: "#{q2.xyz.123}"}};
+            qryq._internal.inferDepends(line2);
+            test.ok(_.isArray(line2.depends));
+            test.equal(line2.depends.length, 2);
+            test.same(line2.depends, ["q1", "q2"]);
+
+            var line3 = {id: "q3", api: "multiply", qry:{a: 1, b: 2}};
+            qryq._internal.inferDepends(line3);
+            test.ok(_.isArray(line3.depends));
+            test.equal(line3.depends.length, 0);
+            test.same(line3.depends, []);
+
+            var line4 = {id: "q4", api: "multiply", qry:{a: "#{q3}", b:5}};
+            qryq._internal.inferDepends(line4);
+            test.ok(_.isArray(line4.depends));
+            test.equal(line4.depends.length, 1);
+            test.same(line4.depends, ["q3"]);
+
+            test.done();
+        }
     }
 };

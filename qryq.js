@@ -23,7 +23,9 @@ var inferDepends = function(line) {
       var tok = found[idx];
       var match = tok.match(dependentSubstituteRe);
       if (match && match.length > 1) {
-        line.depends.push(match[1]);
+        var tmp = match[1];
+        var subKeys = tmp.split('.');
+        line.depends.push(subKeys[0]);
       }
     }
   }
@@ -59,7 +61,7 @@ var validateQueue = function(qry, options) {
     });
   }
   return errs;
-}
+};
 
 exports.parallel = function(deferred, qry, api) {
   var validateErrs = validateQueue(qry);
