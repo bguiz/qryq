@@ -1,4 +1,4 @@
 qryq
 ====
 
-Manages, using promises, a series of API queries, which may be executed in parallel, in sequence, or in an order required by specified dependency of one API query upon the results of zero or more other API queries in the same series where these dependencies form a directed acyclic graph
+qryq is a NodeJs library that allows one to express a series of queries and define dependencies between them either in parallel, in sequence, or in a directed acyclic graph.

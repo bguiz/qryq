@@ -1,7 +1,9 @@
 {
   "name": "qryq",
-  "description": "Express a series of queries and define dependencies between them either in parallel, in sequence, or in a directed acyclic graph",
+  "preferGlobal": false,
+  "description": "qryq allows one to express a series of queries and define dependencies between them either in parallel, in sequence, or in a directed acyclic graph",
   "author": "Brendan Graetz <redacted@my.email> (http://bguiz.com)",
+
   "config": {
     "defaults": {
     },
@@ -9,27 +11,28 @@
     }
   },
   "homepage": "https://github.com/bguiz/qryq",
-  "private": true,
-  "version": "0.0.5",
+  "version": "0.0.6",
   "engines": {
     "node": ">= 0.8.10"  
   },
   "dependencies": {
-    "express": "~3.2.6",
     "q": "~0.9.6",
-    "underscore":"~1.4.4",
+    "underscore":"~1.4.4"
+  },
+  "devDependencies": {
     "nodeunit":"~0.8.1"
   },
   "scripts": {
+    "test": "nodeunit ./test.js"
   },
+  "main": "./qryq.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/bguiz/qryq.git"
   },
-  "keywords": [],
+  "keywords": ["promise", "async", "dependencies", "query management"],
   "license": {
     "type": "GPL v3",
     "url": "http://opensource.org/licenses/GPL-3.0"
   }
 }
-
