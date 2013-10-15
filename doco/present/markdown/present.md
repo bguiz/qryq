@@ -35,13 +35,10 @@ That is, it is formed by a collection of vertices and directed edges, each edge 
 
 ## Implementation
 
-Frameworks
 - [node.js](http://nodejs.org)
-- [express.js](expressjs.com)
-
-Dependencies
 - [Q](https://github.com/kriskowal/q)
 - [underscore.js](http://underscorejs.org)
+- [nodeunit](https://github.com/caolan/nodeunit)
 
 ----
 
@@ -504,12 +501,10 @@ exports.score = function(deferred, qry) {
   - Demonstrate how declaratively defining dependent queries can make code more comprehensible
 - [x] Feature to reference results of dependent queries *inline* in query data
   - Kinda [like this](http://nmjenkins.com/presentations/network-speed.html#/17)
-- [x] Separate [qryq](https://github.com/bguiz/qryq) into its own library
-  - Presently exists only within [walkre](https://github.com/bguiz/walkre)
-- [x] Unit tests
-- [ ] Infer `depends` if not provided using two-pass parsing `qry`
-- [x] Pick a licence for this library
-- [ ] Benchmarking for performance
+- [x] Separate [qryq](https://github.com/bguiz/qryq) into its own library - out of [walkre](https://github.com/bguiz/walkre)
+- [x] Unit tests - `nodeunit`
+- [x] Pick a licence for this library - GPL v3
+- [ ] Infer `depends` if not provided using two passes when parsing each `qry`
 
 ---
 
@@ -517,11 +512,11 @@ exports.score = function(deferred, qry) {
 
 - [ ] Cyclic graph detection in dependent query queue validation
 - [ ] Allow client to create promises and pass in to `qryq`
+- [ ] Benchmarking for performance
 - [ ] Load testing/ stress testing
   - Start including high latency ops, e.g. disk I/O
-- [ ] Create a front end for this server
-  - For full stack load testing/ stress testing
 - [ ] Create a NodeJs/ ExpressJs server wrapper for `qryq`
+  - For full stack load testing/ stress testing
 
 ----
 
