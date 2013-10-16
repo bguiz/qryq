@@ -39,3 +39,11 @@ In summary:
 
 - Call the desired `qryq` method with the promise deferred, query queue, and api objects.
 	- e.g. `qryq.dependent(deferred, queryQueue, api);`
+
+## Licence
+
+[GPL v3](https://github.com/bguiz/qryq/blob/master/LICENCE.md)
+
+## Author
+
+[Brendan Graetz](http://bguiz.com)
