@@ -114,13 +114,6 @@ exports.qryqApi = {
             testAQueryQueue(test, api, aQueryQueue, expectedResults);
         },
         basic: function(test) {
-            //TODO enable inferring depends array
-            // var aQueryQueue = [
-            //   {id: "q1", api: "add", qry:{a:1, b:9}},
-            //   {id: "q2", api: "add", qry:{a:99, b:1}},
-            //   {id: "q3", api: "multiply", qry:{a: "#{q1}", b: "#{q2}"}},
-            //   {id: "q4", api: "multiply", qry:{a: "#{q3}", b:5}}
-            // ];
             var aQueryQueue = [
               {id: "q1", depends:[], api: "add", qry:{a:1, b:9}},
               {id: "q2", depends:[], api: "add", qry:{a:99, b:1}},
