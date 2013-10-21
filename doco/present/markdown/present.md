@@ -145,6 +145,24 @@ POST /api/
 
 ----
 
+### Code
+
+Let's look at some!
+
+- What is it like to write the same thing using async vs. using qryq?
+- (also callbacks, and promises)
+
+----
+
+### Key comparisons
+
+- assembly && execution
+- declarative || imperative
+- developer productivity
+- what it is and what it isn't
+
+----
+
 ## Benefits
 
 - Developer productivity
