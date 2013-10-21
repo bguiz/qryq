@@ -9,8 +9,6 @@ var async = function(fn, qry) {
 
 //TODO make this a non-greedy regex
 var dependentSubstituteRe = /^#{(.*)}(.*)$/ ;
-// var dependentSubstituteRe = /^#\{[^\{\}]\}(.*)$/ ;
-// var dependentSubstituteRe = /^#{[^{}]}(.*)$/ ;
 var dependentInferRe = /#\{[^\{\}]*\}/g ;
 
 var inferDepends = function(line) {
