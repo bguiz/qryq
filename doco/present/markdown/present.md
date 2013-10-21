@@ -147,7 +147,7 @@ POST /api/
 
 ### Code
 
-Let's look at some!
+- Let's look at some!
 
 - What is it like to write the same thing using async vs. using qryq?
 - (also callbacks, and promises)
@@ -166,7 +166,7 @@ Let's look at some!
 ## Benefits
 
 - Developer productivity
-- Bandwidth & latency savings
+- Bandwidth && latency savings
 
 ---
 
@@ -264,7 +264,7 @@ Avoiding
 
 - Instead of making multiple XHR requests to each RESTful API endpoints
   - and assemble them together by hand on the client
-- Invoke qryq API endpoint, and it assembles and excutes the multiple requests
+- Invoke qryq API endpoint, and it assembles and executes the multiple requests
   - Single XHR request-response pair
 - Dev productivity + Bandwidth savings
   - Only if your server is in JS <sup>&lowast;</sup>
@@ -301,9 +301,11 @@ Avoiding
 ### Decisions
 
 - Should the server return all reponses?
-  - Perhaps allow specifyinf which queries we are interested in the return value of.
+  - Perhaps allow specifying which queries we are interested in the return value of.
 - Port to other languages?
   - Which ones?
+- Should remove sequential and parallel alotgether?
+    - Just focus on dependent (DAG) instead?
 
 ----
 
