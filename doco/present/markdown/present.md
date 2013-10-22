@@ -180,6 +180,14 @@ This is the Unix philosophy: Write programs that do one thing and do it well. Wr
 
 ---
 
+![Developer productivity](http://imgs.xkcd.com/comics/mu.png)
+
+---
+
+![Developer productivity](http://imgs.xkcd.com/comics/is_it_worth_the_time.png)
+
+---
+
 ### Benefits - Dev Productivity
 
 - Less need to write dedicated API endpoints
@@ -190,6 +198,15 @@ This is the Unix philosophy: Write programs that do one thing and do it well. Wr
 
 ---
 
+### Benefits - 'Net Traffic
+
+- Concatenation of
+  - Multiple requests
+  - Multiple responses
+- [Protocol overhead](http://sd.wareonearth.com/~phil/net/overhead/) minimised
+
+---
+
 ### Benefits - Dev Productivity
 
 
@@ -197,15 +214,6 @@ This is the Unix philosophy: Write programs that do one thing and do it well. Wr
   - Client/ server
 - Groups several queries together as an atomic unit
   - [Asynchronous UIs](http://blog.alexmaccaw.com/asynchronous-ui)
-
----
-
-### Benefits - 'Net Traffic
-
-- Concatenation of
-  - Multiple requests
-  - Multiple responses
-- [Protocol overhead](http://sd.wareonearth.com/~phil/net/overhead/) minimised
 
 ----
 
@@ -231,6 +239,10 @@ This is the Unix philosophy: Write programs that do one thing and do it well. Wr
 
 ---
 
+![Wisdom of the ancients - errors](http://imgs.xkcd.com/comics/wisdom_of_the_ancients.png)
+
+---
+
 ### Limitations - Expressions
 
 <blockquote>
@@ -239,13 +251,6 @@ This is the Unix philosophy: Write programs that do one thing and do it well. Wr
 
 - A `qry` references results of another `qry` in the same `qryq`
 - Limited: Can only "drill down" through properties
-
-----
-
-Avoiding
-
-- Callback spaghetti
-- Promise spaghetti
 
 ----
 
@@ -271,6 +276,12 @@ Avoiding
 
 ----
 
+### How do I use qryq?
+
+- Instructions in the main [README.md](https://github.com/bguiz/qryq)
+
+----
+
 ## Horizon
 
 - [x] Rewrite the `Q` spaghetti in [walkre](https://github.com/bguiz/walkre)
@@ -285,6 +296,10 @@ Avoiding
 
 ---
 
+![Goto - how bad can it be?](http://imgs.xkcd.com/comics/goto.png)
+
+---
+
 ### Farther Horizon
 
 - [ ] Cyclic graph detection in dependent query queue validation
@@ -295,6 +310,9 @@ Avoiding
 - [ ] Create a NodeJs/ ExpressJs server wrapper for `qryq`
   - For full stack load testing/ stress testing
 - [ ] Minify
+- [ ] Restructure to follow [CommonJS directory structure](https://npmjs.org/doc/json.html#directories)
+- [ ] Publish as a bower project
+- [ ] Write test cases for series and paralllel
 
 ----
 
@@ -304,8 +322,12 @@ Avoiding
   - Perhaps allow specifying which queries we are interested in the return value of.
 - Port to other languages?
   - Which ones?
-- Should remove sequential and parallel alotgether?
+- Should remove sequential and parallel altogether?
     - Just focus on dependent (DAG) instead?
+
+---
+
+![Supported Features](http://imgs.xkcd.com/comics/supported_features.png)
 
 ----
 
