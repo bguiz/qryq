@@ -11,6 +11,9 @@
     }
   },
   "homepage": "https://github.com/bguiz/qryq",
+  "bugs": {
+  	"url": "https://github.com/bguiz/qryq/issues"
+  },
   "version": "0.0.9",
   "engines": {
     "node": ">= 0.8.10"  
