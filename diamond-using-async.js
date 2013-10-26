@@ -24,21 +24,21 @@ async.waterfall([
 	function(callback) {
 		callback(null, {a: 3, b: 4});
 	},
-	api.add,
+	api.add, //A
 	function(result1, callback) {
 		async.parallel([
-			function(cb) {
+			function(cb) { //B
 				api.multiply({a: result1, b: 3}, cb);
 			},
-			function(cb) {
+			function(cb) { //C
 				api.multiply({a: 7, b: result1}, cb);
 			}
 		],
 		function(err, parallelResult) {
-			callback(null, {a: parallelResult[0], b: parallelResult[1]});
+			callback(null, {a: parallelResult[1], b: parallelResult[0]});
 		});
 	},
-	api.add
+	api.add //D
 ],
 function(err, diamondResult) {
 	console.log('diamondResult:', diamondResult);
@@ -48,7 +48,7 @@ function(err, diamondResult) {
 
 Notes:
 
-- with async there is a need to use wrapper function whener parsing is necessary
+- with async there is a need to use wrapper function whenever parsing is necessary
 	- also to pass in the initial value
 - with async, the syntax is a lot more verbose
 	- still need to think of how to "wire up" the function together by knowing their implementation
