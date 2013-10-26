@@ -260,8 +260,9 @@ This is the Unix philosophy: Write programs that do one thing and do it well. Wr
   - and assemble them together by hand
 - Invoke qryq, and it will assemble the multiple requests together itself
   - still makes multiple XHR requests
-- Great if goal is dev productivity,
-  - and not so much bandwidth savings
+- Great if goal is not so much bandwidth savings
+  - instead dev productivity
+  - (or if you're *not* making any XHR requests)
 
 ----
 

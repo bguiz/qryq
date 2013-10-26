@@ -28,7 +28,7 @@
   "scripts": {
     "test": "nodeunit ./test.js"
   },
-  "main": "./qryq.js",
+  "main": "qryq.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/bguiz/qryq.git"
