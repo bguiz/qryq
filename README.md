@@ -2,11 +2,9 @@
 
 qryq is a NodeJs library that allows one to express a series of queries and define dependencies between them either in parallel, in sequence, or in a directed acyclic graph.
 
-(BTW, it's pronounced `/ˈkwərik/`)
-
 ## Adding to your project
 
-The easiest way to add qryq to your node project is to use `npm`:
+The easiest way to add qryq to your node project is to use the node package manager:
 
 `npm install qryq --save`
 
@@ -39,6 +37,10 @@ In summary:
 
 - Call the desired `qryq` method with the promise deferred, query queue, and api objects.
 	- e.g. `qryq.dependent(deferred, queryQueue, api);`
+
+## Pronunciation
+
+`qryq` is pronounced as `/ˈkwərik/`.
 
 ## Licence
 
