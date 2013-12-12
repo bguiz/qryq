@@ -14,9 +14,9 @@
   "bugs": {
   	"url": "https://github.com/bguiz/qryq/issues"
   },
-  "version": "0.0.9",
+  "version": "0.0.10",
   "engines": {
-    "node": ">= 0.8.10"  
+    "node": ">= 0.8.10"
   },
   "dependencies": {
     "q": "~0.9.6",
