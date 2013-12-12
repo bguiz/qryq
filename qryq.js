@@ -77,8 +77,10 @@ exports.parallel = function(deferred, qry, api) {
     var apiName = line.api;
     var apiFunc = api[apiName];
     if (!apiFunc) {
-      apiFunc = api.noSuchApi;
-      apiQry = apiName;
+      deferred.reject({
+        message: "Failed to find function in API with name: "+apiName
+      });
+      return;
     }
     apiPromises.push(async(apiFunc, apiQry));
   });
@@ -164,8 +166,10 @@ var sequentialLine = function(deferred, qry, api, idx, out, dependsResults) {
   var apiName = line.api;
   var apiFunc = api[apiName];
   if (!apiFunc) {
-    apiFunc = api.noSuchApi;
-    apiQry = apiName;
+    deferred.reject({
+      message: "Failed to find function in API with name: "+apiName
+    });
+    return;
   }
   var promise = async(apiFunc, apiQry);
   promise.then(
@@ -252,8 +256,10 @@ exports.dependent = function(deferred, qry, api) {
     var apiName = line.api;
     var apiFunc = api[apiName];
     if (!apiFunc) {
-      apiFunc = api.noSuchApi;
-      apiQry = apiName;
+      deferred.reject({
+        message: "Failed to find function in API with name: "+apiName
+      });
+      return;
     }
     var linePromise = dependentLine(line, apiFunc, linePromisesHash);
     linePromises.push(linePromise);

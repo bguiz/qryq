@@ -19,7 +19,7 @@ exports.qryqBasic = {
                 'dependent'
             ];
             _.each(functionNames, function(functionName) {
-                test.ok(_.isFunction(qryq[functionName]), 
+                test.ok(_.isFunction(qryq[functionName]),
                     'qryq should have a method named '+functionName+' publicly exposed');
             });
             test.done();
@@ -30,7 +30,7 @@ exports.qryqBasic = {
                 'validateQueue'
             ];
             _.each(functionNames, function(functionName) {
-                test.ok(! _.isFunction(qryq[functionName]), 
+                test.ok(! _.isFunction(qryq[functionName]),
                     'qryq should have a method named '+functionName+' publicly exposed');
             });
             test.done();
@@ -49,7 +49,7 @@ var api = {
   },
   multiply: function(deferred, qry) {
     if (!qry || ! _.isNumber(qry.a) || ! _.isNumber(qry.b)) {
-      deferred.reject('Must specify two numeric params, a and b. Params were: '+JSON.stringify(qry));
+      deferred.reject('Must specify two numeric params,a  and b. Params were: '+JSON.stringify(qry));
     }
     else {
       deferred.resolve(qry.a * qry.b);
@@ -66,28 +66,33 @@ var api = {
   }
 };
 
-var testAQueryQueue = function(test, api, queryQueue, expectedResults) {
+var testAQueryQueue = function(test, api, queryQueue, expectedResults, expectToFail) {
     var deferred = Q.defer();
     qryq.dependent(deferred, queryQueue, api);
     deferred.promise.then(function(result) {
-        test.ok(true, 'qryq resolved');
-        console.log(JSON.stringify(result));
-        test.ok(_.isArray(result), 'Returned and array');
-        test.equals(result.length, expectedResults.length, 'Returned expected number of results');
+        test.ok(!expectToFail, 'qryq resolved');
+        if (!expectToFail) {
+            test.ok(_.isArray(result), 'Returned and array');
+            test.equals(result.length, expectedResults.length, 'Returned expected number of results');
 
-        _.each(result, function(qryResult, idx) {
-            test.ok(! _.isUndefined(qryResult.id));
-            var response = qryResult.response;
-            test.ok(_.isObject(response), 'Qry id='+qryResult.id+' has a response object');
-            test.equal(qryResult.id, expectedResults[idx].id, 'Qry id='+qryResult.id+' has expected id');
-            if (!! response) {
-                test.equals(response.state, 'fulfilled', 'Qry id='+qryResult.id+' has expected state');
-                test.same(response.value, expectedResults[idx].value, 'Qry id='+qryResult.id+' has expected result');
-            }
-        }, this);
+            _.each(result, function(qryResult, idx) {
+                test.ok(! _.isUndefined(qryResult.id));
+                var response = qryResult.response;
+                test.ok(_.isObject(response), 'Qry id='+qryResult.id+' has a response object');
+                test.equal(qryResult.id, expectedResults[idx].id, 'Qry id='+qryResult.id+' has expected id');
+                if (!! response) {
+                    test.equals(response.state, 'fulfilled', 'Qry id='+qryResult.id+' has expected state');
+                    test.same(response.value, expectedResults[idx].value, 'Qry id='+qryResult.id+' has expected result');
+                }
+            }, this);
+        }
         test.done();
-    }, function(reason) {
-        test.ok(false, 'qryq rejected, reason:'+JSON.stringify(reason));
+    },
+    function(reason) {
+        test.ok(expectToFail, 'qryq rejected, reason:'+JSON.stringify(reason));
+        if (expectToFail) {
+            test.same(reason, expectedResults);
+        }
         test.done();
     });
 };
@@ -102,13 +107,21 @@ exports.qryqApi = {
         callback();
     },
     testDepends: {
+        invalidApi: function(test) {
+            var aQueryQueue = [
+              {id: "q1", depends:[], api: "noSuchApi", qry:{a:1, b:9}},
+              {id: "q2", depends:[], api: "multiply", qry:{a:7, b:6}}
+            ];
+            var expectedResults = {"message":"Failed to find function in API with name: noSuchApi"};
+            testAQueryQueue(test, api, aQueryQueue, expectedResults, true);
+        },
         noDependencies: function(test) {
             var aQueryQueue = [
               {id: "q1", depends:[], api: "add", qry:{a:1, b:9}},
               {id: "q2", depends:[], api: "multiply", qry:{a:7, b:6}}
             ];
             var expectedResults = [
-                { id: 'q1', value: 10 }, 
+                { id: 'q1', value: 10 },
                 { id: 'q2', value: 42 }
             ];
             testAQueryQueue(test, api, aQueryQueue, expectedResults);
@@ -121,9 +134,9 @@ exports.qryqApi = {
               {id: "q4", depends:['q3'], api: "multiply", qry:{a: "#{q3}", b:5}}
             ];
             var expectedResults = [
-                { id: 'q1', value: 10 }, 
-                { id: 'q2', value: 100 }, 
-                { id: 'q3', value: 1000 }, 
+                { id: 'q1', value: 10 },
+                { id: 'q2', value: 100 },
+                { id: 'q3', value: 1000 },
                 { id: 'q4', value: 5000 }
             ];
             testAQueryQueue(test, api, aQueryQueue, expectedResults);
@@ -136,9 +149,9 @@ exports.qryqApi = {
               {id: "D", depends:['B', 'C'], api: "add", qry:{a:"#{C}", b:"#{B}"}}
             ];
             var expectedResults = [
-                { id: 'A', value: 7 }, 
-                { id: 'B', value: 21 }, 
-                { id: 'C', value: 49 }, 
+                { id: 'A', value: 7 },
+                { id: 'B', value: 21 },
+                { id: 'C', value: 49 },
                 { id: 'D', value: 70 }
             ];
             testAQueryQueue(test, api, aQueryQueue, expectedResults);
@@ -155,7 +168,7 @@ exports.qryqApi = {
                             bar: 5,
                             baz: 6
                         }
-                    } }, 
+                    } },
                 { id: 'y', value: 30 }
             ];
             testAQueryQueue(test, api, aQueryQueue, expectedResults);
