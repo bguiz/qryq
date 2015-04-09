@@ -17,3 +17,4 @@ npm-debug.log
 /static/favicon.ico
 /node_modules
 /doco/private
+/doco
