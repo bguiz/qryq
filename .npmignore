@@ -1,3 +1,5 @@
+/rewrite
+
 /npm-debug.log
 /static/favicon.ico
 /node_modules
@@ -5,3 +7,5 @@
 /doco
 /coverage
 /.coveralls.yml
+
+/test

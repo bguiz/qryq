@@ -1,4 +1,9 @@
-#qryq
+# `qryq`
+
+[![NPM](https://nodei.co/npm/qryq.png)](https://github.com/bguiz/qryq/)
+
+[![Build Status](https://travis-ci.org/bguiz/qryq.svg?branch=master)](https://travis-ci.org/bguiz/qryq)
+[![Coverage Status](https://coveralls.io/repos/bguiz/qryq/badge.svg?branch=master)](https://coveralls.io/r/bguiz/qryq?branch=master)
 
 qryq is a NodeJs library that allows one to express a series of queries and define dependencies between them either in parallel, in sequence, or in a directed acyclic graph.
 
@@ -42,9 +47,17 @@ In summary:
 
 `qryq` is pronounced as `/ˈkwərik/`.
 
+## Contributing
+
+This repository uses the
+[**git flow** ](http://nvie.com/posts/a-successful-git-branching-model/)
+branching strategy.
+If you wish to contribute, please branch from the **develop** branch -
+pull requests will only be requested if they request merging into the develop branch.
+
 ## Licence
 
-[GPL v3](https://github.com/bguiz/qryq/blob/master/LICENCE.md)
+GPLv3
 
 ## Author
 
