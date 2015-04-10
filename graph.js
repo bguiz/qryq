@@ -24,8 +24,7 @@ function qryqGraph(context) {
 
   function _saveCurrentQuery() {
     if (!!currentQuery) {
-      //TODO validate currentQuery
-      //TODO parse depends from input if depends is not specified
+      validateQuery(currentQuery);
       fluent.queries.push(currentQuery);
     }
   }
@@ -69,7 +68,6 @@ function qryqGraph(context) {
    */
   function input(data) {
     currentQuery.input = data;
-    inferDependsFromQueryInputs(currentQuery);
     return fluent;
   }
 
@@ -167,4 +165,20 @@ function inferDependsFromQueryInputs(query) {
       }
     }
   }
+}
+
+function validateQuery(query) {
+  if (typeof query !== 'object') {
+    throw new Error('Query is not defined');
+  }
+  if (typeof query.id !== 'string') {
+    throw new Error('Query needs an ID');
+  }
+  if (typeof query.api !== 'string') {
+    throw new Error('Query needs an API ID');
+  }
+  if (typeof query.input !== 'object') {
+    throw new Error('Query needs an input object');
+  }
+  inferDependsFromQueryInputs(query);
 }

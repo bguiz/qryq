@@ -16,6 +16,38 @@ describe('[graph]', function() {
       done();
     });
 
+    it('Should reject invalid query objects', function(done) {
+      expect(function() {
+        qryq
+          .graph({ api: {} })
+          .allQueries([
+            123
+          ]);
+      }).toThrowError('Query is not defined');
+      expect(function() {
+        qryq
+          .graph({ api: {} })
+          .allQueries([
+            { id: 123, api: 'bar', input: { a: 'b' } }
+          ]);
+      }).toThrowError('Query needs an ID');
+      expect(function() {
+        qryq
+          .graph({ api: {} })
+          .allQueries([
+            { id: 'foo', api: 123, input: { a: 'b' } }
+          ]);
+      }).toThrowError('Query needs an API ID');
+      expect(function() {
+        qryq
+          .graph({ api: {} })
+          .allQueries([
+            { id: 'foo', api: 'bar', input: 123 }
+          ]);
+      }).toThrowError('Query needs an input object');
+      done();
+    });
+
     it('Should construct a query graph using a fluent interface', function(done) {
       var myQueries = qryq
         .graph({
@@ -82,6 +114,7 @@ describe('[graph]', function() {
 
       done();
     });
+
     it('Should specify filter output', function(done) {
       var myQueries = qryq
         .graph({
@@ -123,8 +156,8 @@ describe('[graph]', function() {
         ]);
 
       expect(myQueries.queries).toEqual([
-        { id: 'A', api: 'add', input: { a:3, b:4 } },
-        { id: 'B', api: 'multiply', input: { a:'#{A}', b:3 } }
+        { id: 'A', api: 'add', depends: [], input: { a:3, b:4 } },
+        { id: 'B', api: 'multiply', depends: ['A'], input: { a:'#{A}', b:3 } }
       ]);
       done();
     });
