@@ -125,6 +125,7 @@ function qryqGraph(context) {
    * @return {Promise}
    */
   function run() {
+    _saveCurrentQuery();
     var deferred = Q.defer();
     //TODO validate graph - ensure that all depends exist, and that there are no cycles
     //TODO execute graph of queries using deferred and fluent.queries

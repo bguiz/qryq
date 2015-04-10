@@ -171,10 +171,10 @@ call `allQueries()` and pass in an array of query objects.
 var myQueries = qryq
   .graph({ api: myApi })
   .allQueries([
-    { id: 'A', api: 'add', input: { a:3, b:4 } },
-    { id: 'B', api: 'multiply', input: { a:'#{A}', b:3 } },
-    { id: 'C', api: 'multiply', input: { a:7, b: '#{A}' } },
-    { id: 'D', api: 'add', input: { a:'#{C}', b:'#{B}' } }
+    { id: 'A', api: 'add', input: { num1: 3, num2: 4 } },
+    { id: 'B', api: 'multiply', input: { num1: '#{A}', num2: 3 } },
+    { id: 'C', api: 'multiply', input: { num1: 7, num2:  '#{A}' } },
+    { id: 'D', api: 'add', input: { num1: '#{C}', num2: '#{B}' } }
   ]);
 ```
 
