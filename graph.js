@@ -3,8 +3,7 @@
 var Q = require('q');
 
 function qryqGraph(context) {
-  var api = context.api;
-  if (typeof api !== 'object') {
+  if (typeof context.api !== 'object') {
     throw new Error('Expected an API object');
   }
 
@@ -20,6 +19,14 @@ function qryqGraph(context) {
   };
   var currentQuery;
 
+  function _saveCurrentQuery() {
+    if (!!currentQuery) {
+      //TODO validate currentQuery
+      //TODO parse depends from input if depends is not specified
+      fluent.queries.push(currentQuery);
+    }
+  }
+
   /**
    * query begins describing a new query.
    * subsequent calls to input, depends, and filterOutput will apply to this query
@@ -28,7 +35,8 @@ function qryqGraph(context) {
    * @return {Fluent}
    */
   function query(id) {
-    //TODO
+    _saveCurrentQuery();
+    currentQuery = { id: id };
     return fluent;
   }
 
@@ -39,7 +47,7 @@ function qryqGraph(context) {
    * @return {Fluent}
    */
   function api(name) {
-    //TODO
+    currentQuery.api = name;
     return fluent;
   }
 
@@ -57,7 +65,7 @@ function qryqGraph(context) {
    * @return {Fluent}
    */
   function input(data) {
-    //TODO
+    currentQuery.input = data;
     return fluent;
   }
 
@@ -72,7 +80,7 @@ function qryqGraph(context) {
    * @return {Fluent}
    */
   function depends(dependIds) {
-    //TODO
+    currentQuery.depends = dependIds;
     return fluent;
   }
 
@@ -87,7 +95,7 @@ function qryqGraph(context) {
    * @return {Fluent}
    */
   function filterOutput(shouldFilter) {
-    //TODO
+    currentQuery.filterOutput = !!shouldFilter;
     return fluent;
   }
 
@@ -101,7 +109,11 @@ function qryqGraph(context) {
    * @return {Fluent}
    */
   function allQueries(list) {
-    //TODO
+    fluent.queries = [];
+    list.forEach(function(query) {
+      currentQuery = query;
+      _saveCurrentQuery();
+    });
     return fluent;
   }
 
@@ -114,6 +126,7 @@ function qryqGraph(context) {
    */
   function run() {
     var deferred = Q.defer();
+    //TODO validate graph - ensure that all depends exist, and that there are no cycles
     //TODO execute graph of queries using deferred and fluent.queries
     return deferred.promise;
   }
