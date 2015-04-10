@@ -112,13 +112,16 @@ thereby acting as a performance optimisation.
 ```javascript
   .query('D')
     .api('add')
-    .input({ num1: '#{C}', num2: '#{B}' })
     .depends(['C', 'D'])
+    .input({ num1: '#{C}', num2: '#{B}' })
 ```
 
 This does not result in any difference in the expected output.
 However, if the dependent queries are specified incorrectly,
 wrong results may be returned.
+
+The depends are computed upon setting input if not already present,
+so call it **before** calling `input()`.
 
 ### Filtering Results
 

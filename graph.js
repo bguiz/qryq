@@ -3,6 +3,9 @@
 var Q = require('q');
 
 function qryqGraph(context) {
+  if (typeof context !== 'object') {
+    throw new Error('Expected context');
+  }
   if (typeof context.api !== 'object') {
     throw new Error('Expected an API object');
   }
@@ -113,6 +116,7 @@ function qryqGraph(context) {
     list.forEach(function(query) {
       currentQuery = query;
       _saveCurrentQuery();
+      currentQuery = undefined;
     });
     return fluent;
   }

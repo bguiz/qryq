@@ -2,7 +2,9 @@
   "name": "qryq",
   "preferGlobal": false,
   "description": "express and run arbitrary sets of dependent queries as directed acyclic graphs.",
-  "author": ["bguiz"],
+  "author": [
+    "bguiz"
+  ],
   "config": {
     "defaults": {},
     "limits": {}
@@ -22,7 +24,7 @@
   "devDependencies": {
     "coveralls": "^2.11.2",
     "istanbul": "^0.3.13",
-    "jasmine-node": "^1.14.5",
+    "jasmine-node": "^2.0.0",
     "jshint": "^2.6.3",
     "jshint-stylish": "^1.0.1"
   },
