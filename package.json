@@ -1,7 +1,7 @@
 {
   "name": "qryq",
   "preferGlobal": false,
-  "description": "qryq allows one to express a series of queries and define dependencies between them either in parallel, in sequence, or in a directed acyclic graph",
+  "description": "express and run arbitrary sets of dependent queries as directed acyclic graphs.",
   "author": ["bguiz"],
   "config": {
     "defaults": {},
@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/bguiz/qryq/issues"
   },
-  "version": "0.0.10",
+  "version": "1.0.0-alpha",
   "engines": {
     "node": ">= 0.8.10"
   },
