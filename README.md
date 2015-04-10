@@ -162,6 +162,30 @@ In the example above, we assume that the `foobar` API returns this object:
 `{ foo: { bar: 123 } }`.
 After this, the `baz` API is called with this input object: `{ value: 123 }`.
 
+### Non-fluent Interface
+
+Instead of using a fluent interface as above,
+call `allQueries()` and pass in an array of query objects.
+
+```javascript
+var myQueries = qryq
+  .graph({ api: myApi })
+  .allQueries([
+    { id: 'A', api: 'add', input: { a:3, b:4 } },
+    { id: 'B', api: 'multiply', input: { a:'#{A}', b:3 } },
+    { id: 'C', api: 'multiply', input: { a:7, b: '#{A}' } },
+    { id: 'D', api: 'add', input: { a:'#{C}', b:'#{B}' } }
+  ]);
+```
+
+This approach is made available for two reasons:
+
+- easy migration from `qryq@0.x.x`
+  - note that what is now named `input` was previously named `qry`
+- when there is a need to construct the list of queries without `qryq`,
+  - for example if `qryq` is on a server,
+    and the client makes a request to the server with this list of queries.
+
 ## Pronunciation
 
 `qryq` is pronounced as `/ˈkwərik/`.
