@@ -69,6 +69,7 @@ function qryqGraph(context) {
    */
   function input(data) {
     currentQuery.input = data;
+    inferDependsFromQueryInputs(currentQuery);
     return fluent;
   }
 
@@ -140,3 +141,30 @@ function qryqGraph(context) {
 }
 
 module.exports = qryqGraph;
+
+
+//TODO make this a non-greedy regex
+// var dependentSubstituteRe = /^#{(.*)}(.*)$/ ;
+var dependentSubstituteRe = /^#{([^\{\}]*)}(.*)$/ ;
+var dependentInferRe = /#\{[^\{\}]*\}/g ;
+
+function inferDependsFromQueryInputs(query) {
+  if (!!query.depends) {
+    // Skip inferring depends if it already has been set
+    return;
+  }
+  query.depends = [];
+  var inputAsString = JSON.stringify(query.input);
+  var found = inputAsString.match(dependentInferRe);
+  if (found && found.length > 0) {
+    for (var idx = 0; idx < found.length; ++idx) {
+      var tok = found[idx];
+      var match = tok.match(dependentSubstituteRe);
+      if (match && match.length > 1) {
+        var tmp = match[1];
+        var subKeys = tmp.split('.');
+        query.depends.push(subKeys[0]);
+      }
+    }
+  }
+}

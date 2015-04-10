@@ -34,9 +34,9 @@ describe('[graph]', function() {
           .api('add')
           .input({ a: '#{C}', b: '#{B}' });
       expect(myQueries.queries).toEqual([
-        { id: 'A', api: 'add', input: { a:3, b:4 } },
-        { id: 'B', api: 'multiply', input: { a:'#{A}', b:3 } },
-        { id: 'C', api: 'multiply', input: { a:7, b: '#{A}' } }
+        { id: 'A', api: 'add', depends: [], input: { a:3, b:4 } },
+        { id: 'B', api: 'multiply', depends: ['A'], input: { a:'#{A}', b:3 } },
+        { id: 'C', api: 'multiply', depends: ['A'], input: { a:7, b: '#{A}' } }
       ]);
 
       // Final query only gets appended upon run getting called.
@@ -45,10 +45,10 @@ describe('[graph]', function() {
       promise.timeout(1, 'Do not care');
 
       expect(myQueries.queries).toEqual([
-        { id: 'A', api: 'add', input: { a:3, b:4 } },
-        { id: 'B', api: 'multiply', input: { a:'#{A}', b:3 } },
-        { id: 'C', api: 'multiply', input: { a:7, b: '#{A}' } },
-        { id: 'D', api: 'add', input: { a:'#{C}', b:'#{B}' } }
+        { id: 'A', api: 'add', depends: [], input: { a:3, b:4 } },
+        { id: 'B', api: 'multiply', depends: ['A'], input: { a:'#{A}', b:3 } },
+        { id: 'C', api: 'multiply', depends: ['A'], input: { a:7, b: '#{A}' } },
+        { id: 'D', api: 'add', depends: ['C', 'B'], input: { a:'#{C}', b:'#{B}' } }
       ]);
 
       done();
@@ -102,8 +102,8 @@ describe('[graph]', function() {
       promise.timeout(1, 'Do not care');
 
       expect(myQueries.queries).toEqual([
-        { id: 'A', api: 'add', filterOutput: true, input: { a:3, b:4 } },
-        { id: 'B', api: 'multiply', filterOutput: false, input: { a:'#{A}', b:3 } }
+        { id: 'A', api: 'add', filterOutput: true, depends: [], input: { a:3, b:4 } },
+        { id: 'B', api: 'multiply', filterOutput: false, depends: ['A'], input: { a:'#{A}', b:3 } },
       ]);
 
       done();
