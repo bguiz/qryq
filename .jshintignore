@@ -1,0 +1,7 @@
+/rewrite
+/examples 
+/doco
+
+/node_modules
+/coverage
+/test

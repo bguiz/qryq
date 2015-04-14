@@ -1,39 +1,49 @@
 {
   "name": "qryq",
   "preferGlobal": false,
-  "description": "qryq allows one to express a series of queries and define dependencies between them either in parallel, in sequence, or in a directed acyclic graph",
-  "author": "Brendan Graetz <redacted@my.email> (http://bguiz.com)",
-
+  "description": "express and run arbitrary sets of dependent queries as directed acyclic graphs.",
+  "author": [
+    "bguiz"
+  ],
   "config": {
-    "defaults": {
-    },
-    "limits": {
-    }
+    "defaults": {},
+    "limits": {}
   },
   "homepage": "https://github.com/bguiz/qryq",
   "bugs": {
-  	"url": "https://github.com/bguiz/qryq/issues"
+    "url": "https://github.com/bguiz/qryq/issues"
   },
-  "version": "0.0.10",
+  "version": "1.0.0-alpha",
   "engines": {
     "node": ">= 0.8.10"
   },
   "dependencies": {
-    "q": "~0.9.6",
-    "underscore":"~1.4.4"
+    "q": "~0.9.6"
   },
   "devDependencies": {
-    "nodeunit":"~0.8.1"
+    "coveralls": "^2.11.2",
+    "istanbul": "^0.3.13",
+    "jasmine-node": "^2.0.0",
+    "jshint": "^2.6.3",
+    "jshint-stylish": "^1.0.1"
   },
   "scripts": {
-    "test": "nodeunit ./test.js"
+    "test": "node ./node_modules/jasmine-node/bin/jasmine-node test",
+    "lint": "./node_modules/jshint/bin/jshint --verbose --reporter ./node_modules/jshint-stylish .",
+    "cover": "node ./node_modules/istanbul/lib/cli cover ./node_modules/jasmine-node/bin/jasmine-node test",
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
   "main": "qryq.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/bguiz/qryq.git"
   },
-  "keywords": ["promise", "async", "dependencies", "query management"],
+  "keywords": [
+    "promise",
+    "async",
+    "dependencies",
+    "query management"
+  ],
   "license": {
     "type": "GPL v3",
     "url": "http://opensource.org/licenses/GPL-3.0"
