@@ -1,0 +1,12 @@
+language: node_js
+node_js:
+  - "0.10"
+  - "0.11"
+  - "0.12"
+  - "iojs"
+  - "iojs-v1.0.4"
+script:
+  - npm run lint
+  - npm run cover
+after_success:
+  - npm run coveralls
