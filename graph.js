@@ -2,6 +2,8 @@
 
 var Q = require('q');
 
+var constants = require('./constants');
+
 function qryqGraph(context) {
   if (typeof context !== 'object') {
     throw new Error('Expected context');
@@ -132,6 +134,7 @@ function qryqGraph(context) {
     var deferred = Q.defer();
     //TODO validate graph - ensure that all depends exist, and that there are no cycles
     //TODO execute graph of queries using deferred and fluent.queries
+    require('./graph-run')(deferred, context.api, fluent.queries);
     return deferred.promise;
   }
 
@@ -140,12 +143,6 @@ function qryqGraph(context) {
 
 module.exports = qryqGraph;
 
-
-//TODO make this a non-greedy regex
-// var dependentSubstituteRe = /^#{(.*)}(.*)$/ ;
-var dependentSubstituteRe = /^#{([^\{\}]*)}(.*)$/ ;
-var dependentInferRe = /#\{[^\{\}]*\}/g ;
-
 function inferDependsFromQueryInputs(query) {
   if (!!query.depends) {
     // Skip inferring depends if it already has been set
@@ -153,11 +150,11 @@ function inferDependsFromQueryInputs(query) {
   }
   query.depends = [];
   var inputAsString = JSON.stringify(query.input);
-  var found = inputAsString.match(dependentInferRe);
+  var found = inputAsString.match(constants.GRAPH_DEPENDENT_INFER_REGEX);
   if (found && found.length > 0) {
     for (var idx = 0; idx < found.length; ++idx) {
       var tok = found[idx];
-      var match = tok.match(dependentSubstituteRe);
+      var match = tok.match(constants.GRAPH_DEPENDENT_SUBSTITUTE_REGEX);
       if (match && match.length > 1) {
         var tmp = match[1];
         var subKeys = tmp.split('.');
