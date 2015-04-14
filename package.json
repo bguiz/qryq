@@ -13,7 +13,7 @@
   "bugs": {
     "url": "https://github.com/bguiz/qryq/issues"
   },
-  "version": "1.0.0-alpha",
+  "version": "1.0.0-rc1",
   "engines": {
     "node": ">= 0.8.10"
   },
