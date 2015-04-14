@@ -84,7 +84,7 @@ describe('[graph]', function() {
       ]);
 
       done();
-    })
+    });
   });
 
   describe('[advanced]', function() {
@@ -141,10 +141,12 @@ describe('[graph]', function() {
 
       done();
     });
+
     it('Should allow expression drilldowns', function(done) {
       //TODO cannot be tested yet - not yet implemented
       done();
     });
+
     it('Should specify all queries ', function(done) {
       var myQueries = qryq
         .graph({

@@ -103,7 +103,7 @@ In the above example, we expect result to be:
 
 ## Advanced usage
 
-### Specifying Dependents
+### Manually Specifying Dependents
 
 Use `depends()` to specify an array of names of queries that this query depends on.
 This saves `qryq` from having to analyse the input object,

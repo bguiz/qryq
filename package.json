@@ -18,8 +18,7 @@
     "node": ">= 0.8.10"
   },
   "dependencies": {
-    "q": "~0.9.6",
-    "underscore": "~1.4.4"
+    "q": "~0.9.6"
   },
   "devDependencies": {
     "coveralls": "^2.11.2",
