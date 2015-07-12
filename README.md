@@ -57,7 +57,7 @@ Note that the dependencies are inferred automatically from the input data object
 If any values are a string that looks like `'#{ANOTHER_QUERYS_NAME}'`,
 the output value of the other query named will be substituted in its place.
 This means that this other query is identified as a prerequisite,
-and thus must complete successfully **before** this query begins.
+and thus must complete successfully **before** the prior query begins.
 `qryq` will automatically identify that this is the case,
 and wire up the promises as required.
 
@@ -107,7 +107,7 @@ In the above example, we expect result to be:
 
 Use `depends()` to specify an array of names of queries that this query depends on.
 This saves `qryq` from having to analyse the input object,
-thereby acting as a performance optimisation.
+thereby acting as a possible performance optimisation.
 
 ```javascript
   .query('D')
@@ -118,9 +118,9 @@ thereby acting as a performance optimisation.
 
 This does not result in any difference in the expected output.
 However, if the dependent queries are specified incorrectly,
-wrong results may be returned.
+behaviour is not defined and incorrect results may be returned.
 
-The depends are computed upon setting input if not already present,
+The `depends` are computed upon setting input if not already present,
 so call it **before** calling `input()`.
 
 ### Filtering Results
@@ -183,7 +183,7 @@ var myQueries = qryq
 
 This approach is made available for two reasons:
 
-- easy migration from `qryq@0.x.x`
+- easy migration from `qryq@0`
   - note that what is now named `input` was previously named `qry`
 - when there is a need to construct the list of queries without `qryq`,
   - for example if `qryq` is on a server,
